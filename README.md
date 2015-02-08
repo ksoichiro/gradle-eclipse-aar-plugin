@@ -1,5 +1,7 @@
 # gradle-eclipse-aar-plugin
 
+[![Build Status](http://img.shields.io/travis/ksoichiro/gradle-eclipse-aar-plugin.svg?style=flat&branch=master)](https://travis-ci.org/ksoichiro/gradle-eclipse-aar-plugin)
+
 Gradle plugin to use Android AAR libraries on Eclipse.
 
 You can manage dependencies with Gradle and build app on Eclipse.
