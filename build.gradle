@@ -1,0 +1,136 @@
+plugins {
+    id 'net.saliman.cobertura' version '2.2.5'
+}
+
+allprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group = GROUP
+version = VERSION_NAME
+
+// To release:
+// ./gradlew clean assemble uploadArchives -Prelease
+def isReleaseBuild
+if (hasProperty("release")) {
+    isReleaseBuild = true
+}
+
+def sonatypeRepositoryUrl
+
+if (isReleaseBuild) {
+    if ("$version".endsWith('-SNAPSHOT')) {
+        println "SNAPSHOT BUILD $version"
+        sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+    } else {
+        println "RELEASE BUILD $version"
+        sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+    }
+} else {
+    println "DEBUG BUILD $version"
+    sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+// Note: These properties must be defined in ~/.gradle/gradle.properties
+// and signing.keyId, signing.password, signing.secretKeyRingFile, too.
+def username = hasProperty("nexusUsername") ? project.getProperty("nexusUsername") : ""
+def password = hasProperty("nexusPassword") ? project.getProperty("nexusPassword") : ""
+
+dependencies {
+    compile gradleApi()
+    compile 'org.codehaus.groovy:groovy-all:2.4.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = POM_ARTIFACT_ID
+    }
+}
+
+cobertura {
+    coverageFormats = ['html', 'xml']
+    coverageSourceDirs = sourceSets.main.groovy.srcDirs
+}
+
+afterEvaluate { project ->
+    uploadArchives {
+        if (isReleaseBuild) {
+            repositories {
+                mavenDeployer {
+                    beforeDeployment { deployment -> signing.signPom(deployment) }
+
+                    repository(url: sonatypeRepositoryUrl) {
+                        authentication(userName: username, password: password)
+                    }
+
+                    pom.project {
+                        name POM_NAME
+                        groupId GROUP
+                        description POM_DESCRIPTION
+                        url POM_URL
+                        inceptionYear POM_INCEPTION_YEAR
+
+                        scm {
+                            url POM_SCM_URL
+                            connection POM_SCM_CONNECTION
+                            developerConnection POM_SCM_DEV_CONNECTION
+                        }
+
+                        licenses {
+                            license {
+                                name POM_LICENSE_NAME
+                                url POM_LICENSE_URL
+                                distribution POM_LICENSE_DIST
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id POM_DEVELOPER_ID
+                                name POM_DEVELOPER_NAME
+                                url POM_DEVELOPER_URL
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // for development
+            repositories {
+                mavenDeployer {
+                    repository(url: uri('./samples/repo'))
+                }
+            }
+        }
+    }
+
+    signing {
+        required { isReleaseBuild && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
+    }
+}

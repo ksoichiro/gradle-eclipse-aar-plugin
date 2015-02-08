@@ -1,0 +1,6 @@
+*.iml
+*.swp
+.idea/
+.gradle/
+build/
+samples/repo/
