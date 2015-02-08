@@ -36,7 +36,7 @@ class GenerateTask extends BaseTask {
         findTargetProjects()
 
         def aggregateDependenciesFrom = { Project p ->
-            androidConfigurations(p).each {
+            androidConfigurations().each {
                 println "Aggregating JAR dependencies from ${it.name} configuration"
                 it.filter {
                     it.name.endsWith 'jar'
@@ -54,7 +54,7 @@ class GenerateTask extends BaseTask {
         }
 
         def extractDependenciesFrom = { Project p ->
-            androidConfigurations(p).each {
+            androidConfigurations().each {
                 println "Extracting JAR dependencies from ${it.name} configuration"
                 it.filter {
                     it.name.endsWith 'jar'
@@ -82,8 +82,12 @@ class GenerateTask extends BaseTask {
         }
     }
 
-    static def androidConfigurations(Project p) {
-        [p.configurations.compile, p.configurations.debugCompile]
+    def androidConfigurations() {
+        def result = []
+        projects.each {
+            result.addAll([it.configurations.compile, it.configurations.debugCompile])
+        }
+        result
     }
 
     static String getDependencyProjectName(File file) {
@@ -117,12 +121,7 @@ class GenerateTask extends BaseTask {
 
     void moveJarIntoLibs(Project p, File file) {
         println "Added jar ${file}"
-        copyJarIfNewer('libs', file, false, { destDir ->
-            p.copy {
-                from file
-                into destDir
-            }
-        })
+        copyJarIfNewer(p, 'libs', file, false)
     }
 
     void moveAndRenameAar(Project p, File file) {
@@ -140,21 +139,11 @@ class GenerateTask extends BaseTask {
         // In Eclipse you can then import this exploded ar as an Android project
         // and then reference not only the classes but also the android resources :D
         ["${extension.aarDependenciesDir}/${dependencyProjectName}/libs", "libs"].each { dest ->
-            def jarFileName = "${dependencyProjectName}.jar"
-            copyJarIfNewer(dest, file, true, { destDir ->
-                p.copy {
-                    from p.zipTree(file)
-                    include 'classes.jar'
-                    into destDir
-                    rename { String fileName ->
-                        fileName.replace('classes.jar', jarFileName)
-                    }
-                }
-            })
+            copyJarIfNewer(p, dest, file, true)
         }
     }
 
-    void copyJarIfNewer(String libsDir, File dependency, boolean isAarDependency, Closure copyClosure) {
+    void copyJarIfNewer(Project p, String libsDir, File dependency, boolean isAarDependency) {
         def dependencyFilename = dependency.name
         def dependencyProjectName = getDependencyProjectName(dependency)
         def dependencyName = getDependencyName(dependencyFilename)
@@ -162,6 +151,26 @@ class GenerateTask extends BaseTask {
         boolean isNewer = false
         boolean sameDependencyExists = false
         def dependencies = isAarDependency ? aarDependencies : jarDependencies
+        def copyClosure = isAarDependency ? { destDir ->
+            p.copy {
+                from p.zipTree(dependency)
+                exclude 'classes.jar'
+                into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+            }
+            p.copy {
+                from p.zipTree(dependency)
+                include 'classes.jar'
+                into destDir
+                rename { String fileName ->
+                    fileName.replace('classes.jar', "${dependencyProjectName}.jar")
+                }
+            }
+        } : { destDir ->
+            p.copy {
+                from dependency
+                into destDir
+            }
+        }
         dependencies.findAll { File it ->
             // Check if there are any dependencies with the same name but different version
             getDependencyName(it.name) == dependencyName && getVersionName(it.name) != versionName
@@ -175,16 +184,16 @@ class GenerateTask extends BaseTask {
                 println "  Found older dependency. Copy ${dependencyFilename} to all subprojects"
                 isNewer = true
                 // Should be replaced to jarFilename jar
-                projects.each { Project p ->
-                    def projectLibDir = p.file('libs')
+                projects.each { Project pp ->
+                    def projectLibDir = pp.file('libs')
                     if (isAarDependency) {
                         projectLibDir.listFiles().findAll {
                             it.isDirectory() && getDependencyName(it.name) == dependencyName
                         }.each { File lib ->
                             println "  REMOVED ${lib}"
-                            p.delete(lib)
-                            p.copy {
-                                from p.zipTree(dependency)
+                            pp.delete(lib)
+                            pp.copy {
+                                from pp.zipTree(dependency)
                                 exclude 'classes.jar'
                                 into "${extension.aarDependenciesDir}/${dependencyProjectName}"
                             }
@@ -195,7 +204,7 @@ class GenerateTask extends BaseTask {
                             !it.isDirectory() && getDependencyName(it.name) == dependencyName
                         }.each { File lib ->
                             println "  REMOVED ${lib}"
-                            p.delete(lib)
+                            pp.delete(lib)
                             copyClosure(projectLibDir)
                         }
                     }
