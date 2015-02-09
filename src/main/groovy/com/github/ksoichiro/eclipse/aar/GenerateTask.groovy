@@ -243,7 +243,7 @@ android.library=true
         p.file("${extension.aarDependenciesDir}/${name}/.project").text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>${p.name}-${name}</name>
+	<name>${extension.projectNamePrefix}${p.name}-${name}</name>
 	<comment></comment>
 	<projects>
 	</projects>
