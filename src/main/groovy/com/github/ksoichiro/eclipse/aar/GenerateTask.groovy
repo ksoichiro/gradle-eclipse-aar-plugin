@@ -239,11 +239,12 @@ android.library=true
     }
 
     void generateEclipseProjectFile(Project p, File aar) {
+        def projectName = extension.projectName ?: p.name
         def name = aar.name
         p.file("${extension.aarDependenciesDir}/${name}/.project").text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>${extension.projectNamePrefix}${p.name}-${name}</name>
+	<name>${extension.projectNamePrefix}${projectName}-${name}</name>
 	<comment></comment>
 	<projects>
 	</projects>
