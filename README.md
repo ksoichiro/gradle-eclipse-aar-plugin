@@ -135,6 +135,17 @@ and AAR dependencies will be exploded and copied to `aarDependencies` directory 
 1. Confirm your device is connected.
 1. Right click your main project and select `Run As` > `Android Application`.
 
+## Configurations
+
+Configurations for this plugin are written in `eclipseAar` closure.
+
+| Configuration | Default | Description |
+| ------------- | ------- | ----------- |
+| androidTarget | 'android-21' | `target` value in dependency projects' project.properties |
+| aarDependenciesDir | 'aarDependencies' | Directory to explode AARs |
+| projectNamePrefix | (Empty) | Project name prefix for AAR dependencies |
+| projectName | (Target project name) | Base project name for AAR dependencies |
+
 ## License
 
     Copyright 2015 Soichiro Kashima
