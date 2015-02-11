@@ -4,8 +4,8 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
 
 class GenerateTask extends BaseTask {
-    def jarDependencies
-    def aarDependencies
+    Set<File> jarDependencies
+    Set<File> aarDependencies
 
     static {
         String.metaClass.isNewerThan = { String v2 ->
@@ -30,8 +30,8 @@ class GenerateTask extends BaseTask {
     @TaskAction
     def exec() {
         extension = project.eclipseAar
-        jarDependencies = [] as Set
-        aarDependencies = [] as Set
+        jarDependencies = [] as Set<File>
+        aarDependencies = [] as Set<File>
 
         findTargetProjects()
 
@@ -72,13 +72,15 @@ class GenerateTask extends BaseTask {
         }
 
         projects.each { Project p ->
-            p?.file(extension.aarDependenciesDir)?.listFiles()?.findAll {
+            List<File> aars = p?.file(extension.aarDependenciesDir)?.listFiles()?.findAll {
                 it.isDirectory()
-            }?.each { aar ->
+            }
+            aars?.each { aar ->
                 generateProjectPropertiesFile(p, aar)
                 generateEclipseClasspathFile(p, aar)
                 generateEclipseProjectFile(p, aar)
             }
+            generateEclipseClasspathFileForParent(p)
         }
     }
 
@@ -88,6 +90,10 @@ class GenerateTask extends BaseTask {
             result.addAll([it.configurations.compile, it.configurations.debugCompile])
         }
         result
+    }
+
+    static String getAarJarFilename(File file) {
+        "${getBaseName(file.name)}.jar"
     }
 
     static String getDependencyProjectName(File file) {
@@ -277,5 +283,50 @@ android.library=true
 	</natures>
 </projectDescription>
 """
+    }
+
+    void generateEclipseClasspathFileForParent(Project p) {
+        def classpathFile = p.file('.classpath')
+        def libNames = []
+        if (classpathFile.exists()) {
+            // Aggregate dependencies
+            def classPaths = new XmlSlurper().parseText(classpathFile.text)
+            def libClassPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'lib' }
+            libNames = libClassPathEntries.collect { it.@path.text().replaceFirst('^libs/', '') }
+        } else {
+            // Create minimum classpath file
+            classpathFile.text = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="gen"/>
+\t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+\t<classpathentry kind="output" path="bin/classes"/>
+</classpath>
+"""
+        }
+        def additionalClassPathEntries = []
+        def jars = []
+        jars.addAll(jarDependencies.collect { it.name })
+        jars.addAll(aarDependencies.collect { getAarJarFilename(it) })
+        jars = jars.findAll { !(it in libNames) }
+        jars.each { jar ->
+            additionalClassPathEntries << "<classpathentry kind=\"lib\" path=\"libs/${jar}\"/>"
+        }
+        if (0 < additionalClassPathEntries.size()) {
+            def lines = []
+            classpathFile.eachLine { line ->
+                if (line != '</classpath>') {
+                    lines << line
+                }
+            }
+            additionalClassPathEntries.each { classPathEntry ->
+                lines << "\t${classPathEntry}"
+            }
+            lines << "</classpath>${System.getProperty('line.separator')}"
+            classpathFile.text = lines.join(System.getProperty('line.separator'))
+        }
     }
 }

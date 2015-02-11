@@ -68,34 +68,6 @@ If you use Gradle wrapper, you don't have to install Gradle.
 * `gradlew.sh`
 * `gradlew.bat`
 
-### Configure classpath
-
-Add dependencies to Eclipse classpath entries (`.classpath`).
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry exported="true" kind="con" path="org.springsource.ide.eclipse.gradle.classpathcontainer"/>
-	<classpathentry kind="output" path="bin/classes"/>
-
-	<!-- Define your dependencies: libs/ARTIFACT_ID-VERSION.jar -->
-	<classpathentry kind="lib" path="libs/android-observablescrollview-1.5.0.jar"/>
-	<classpathentry kind="lib" path="libs/appcompat-v7-21.0.2.jar"/>
-	<classpathentry kind="lib" path="libs/floatingactionbutton-1.0.7.jar"/>
-	<classpathentry kind="lib" path="libs/library-2.4.0.jar"/>
-	<classpathentry kind="lib" path="libs/recyclerview-v7-21.0.0.jar"/>
-	<classpathentry kind="lib" path="libs/support-annotations-21.0.2.jar"/>
-	<classpathentry kind="lib" path="libs/support-v4-21.0.2.jar"/>
-</classpath>
-```
-
-This will be generated automatically in the future.
-
 ### Configure project properties
 
 ```
