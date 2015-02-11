@@ -307,20 +307,13 @@ android.library=true
 </classpath>
 """
         }
-        def additionalClassPathEntries = []
-        def jars = []
-        jars.addAll(jarDependencies.collect { it.name })
-        jars.addAll(aarDependencies.collect { getAarJarFilename(it) })
+        def jars = jarDependencies.collect { it.name } + aarDependencies.collect { getAarJarFilename(it) }
         jars = jars.findAll { !(it in libNames) }
-        jars.each { jar ->
-            additionalClassPathEntries << "<classpathentry kind=\"lib\" path=\"libs/${jar}\"/>"
-        }
-        if (0 < additionalClassPathEntries.size()) {
-            def lines = classpathFile.readLines()?.findAll { line -> line != '</classpath>' }
-            additionalClassPathEntries.each { classPathEntry ->
-                lines << "\t${classPathEntry}"
-            }
-            lines << "</classpath>${System.getProperty('line.separator')}"
+        if (jars) {
+            def entriesToAdd = jars.collect { it -> "\t<classpathentry kind=\"lib\" path=\"libs/${it}\"/>" }
+            def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
+            lines += entriesToAdd
+            lines += "</classpath>${System.getProperty('line.separator')}"
             classpathFile.text = lines.join(System.getProperty('line.separator'))
         }
     }
