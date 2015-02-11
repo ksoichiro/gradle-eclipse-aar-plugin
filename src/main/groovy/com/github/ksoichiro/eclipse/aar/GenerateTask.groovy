@@ -1,11 +1,12 @@
 package com.github.ksoichiro.eclipse.aar
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
 
 class GenerateTask extends BaseTask {
-    Set<File> jarDependencies
-    Set<File> aarDependencies
+    Set<AndroidDependency> jarDependencies
+    Set<AndroidDependency> aarDependencies
 
     static {
         String.metaClass.isNewerThan = { String v2 ->
@@ -30,41 +31,59 @@ class GenerateTask extends BaseTask {
     @TaskAction
     def exec() {
         extension = project.eclipseAar
-        jarDependencies = [] as Set<File>
-        aarDependencies = [] as Set<File>
+        jarDependencies = [] as Set<AndroidDependency>
+        aarDependencies = [] as Set<AndroidDependency>
 
         findTargetProjects()
 
-        def aggregateDependenciesFrom = { Project p ->
-            androidConfigurations().each {
-                println "Aggregating JAR dependencies from ${it.name} configuration"
-                it.filter {
+        projects.each { Project p ->
+            androidConfigurations().each { configuration ->
+                println "Aggregating JAR dependencies for project ${p.name} from ${configuration.name} configuration"
+                configuration.filter {
                     it.name.endsWith 'jar'
-                }.each { File jar -> jarDependencies << jar }
+                }.each { File jar ->
+                    def d = new AndroidDependency()
+                    d.with {
+                        group = "" // TODO
+                        name = "" // TODO
+                        version = "" // TODO
+                        file = jar
+                        artifactType = AndroidArtifactType.JAR
+                    }
+                    jarDependencies << d
+                }
+                jarDependencies = getLatestDependencies(jarDependencies)
 
-                println "Aggregating AAR dependencies from ${it.name} configuration"
-                it.filter { File aar ->
-                    aar.name.endsWith('aar') && isRequired(p, aar)
-                }.each { File aar -> aarDependencies << aar }
+                println "Aggregating AAR dependencies for project ${p.name} from ${configuration.name} configuration"
+                configuration.filter { File aar ->
+                    aar.name.endsWith('aar')
+                }.each { File aar ->
+                    def convertedPath = aar.path.tr(System.getProperty('file.separator'), '.')
+                    def convertedPathExtStripped = convertedPath.lastIndexOf('.').with {
+                        it != -1 ? convertedPath[0..<it] : convertedPath
+                    }
+                    def matchedDependency = configuration.dependencies.find { d -> convertedPathExtStripped.endsWith("${d.name}-release") }
+                    if (matchedDependency instanceof ProjectDependency) {
+                        // ProjectDependency should be not be exploded, just include in project.properties with relative path
+                    } else {
+                        def d = new AndroidDependency()
+                        d.with {
+                            group = "" // TODO
+                            name = "" // TODO
+                            version = "" // TODO
+                            file = aar
+                            artifactType = AndroidArtifactType.AAR
+                        }
+                        aarDependencies << d
+                    }
+                }
+                aarDependencies = getLatestDependencies(aarDependencies)
             }
-        }
-
-        projects.each {
-            aggregateDependenciesFrom it
         }
 
         def extractDependenciesFrom = { Project p ->
-            androidConfigurations().each {
-                println "Extracting JAR dependencies from ${it.name} configuration"
-                it.filter {
-                    it.name.endsWith 'jar'
-                }.each { File jar -> moveJarIntoLibs(p, jar) }
-
-                println "Extracting AAR dependencies from ${it.name} configuration"
-                it.filter { File aar ->
-                    aar.name.endsWith('aar') && isRequired(p, aar)
-                }.each { File aar -> moveAndRenameAar(p, aar) }
-            }
+            jarDependencies.each { AndroidDependency d -> moveJarIntoLibs(p, d) }
+            aarDependencies.each { AndroidDependency d -> moveAndRenameAar(p, d) }
         }
 
         projects.each {
@@ -114,29 +133,38 @@ class GenerateTask extends BaseTask {
         baseFilename.lastIndexOf('-').with { it != -1 ? baseFilename.substring(it + 1) : baseFilename }
     }
 
-    boolean isRequired(Project p, File aar) {
-        def name = getDependencyProjectName(aar)
-        boolean result = false
-        p.file('project.properties').eachLine { String line ->
-            if (line.matches("^android.library.reference.[0-9]+=${extension.aarDependenciesDir}/${name}")) {
-                result = true
+    static Set<AndroidDependency> getLatestDependencies(Set<AndroidDependency> dependencies) {
+        Set<AndroidDependency> latestDependencies = []
+        dependencies.each { dependency ->
+            def dependencyName = getDependencyName(dependency.file.name)
+            String latestJarVersion = "0"
+            def duplicateDependencies = dependencies.findAll { it.file.name.startsWith(dependencyName) }
+            if (1 < duplicateDependencies.size()) {
+                duplicateDependencies.each {
+                    if (getVersionName(it.file.name).isNewerThan(latestJarVersion)) {
+                        latestJarVersion = getVersionName(it.file.name)
+                    }
+                }
+                latestDependencies << dependencies.find { getVersionName(it.file.name) == latestJarVersion }
+            } else {
+                latestDependencies << dependency
             }
         }
-        result
+        latestDependencies
     }
 
-    void moveJarIntoLibs(Project p, File file) {
-        println "Added jar ${file}"
-        copyJarIfNewer(p, 'libs', file, false)
+    void moveJarIntoLibs(Project p, AndroidDependency dependency) {
+        println "Added jar ${dependency.file}"
+        copyJarIfNewer(p, 'libs', dependency.file, false)
     }
 
-    void moveAndRenameAar(Project p, File file) {
-        println "Added aar ${file}"
-        def dependencyProjectName = getDependencyProjectName(file)
+    void moveAndRenameAar(Project p, AndroidDependency dependency) {
+        println "Added aar ${dependency.file}"
+        def dependencyProjectName = getDependencyProjectName(dependency.file)
 
         // directory excluding the classes.jar
         p.copy {
-            from p.zipTree(file)
+            from p.zipTree(dependency.file)
             exclude 'classes.jar'
             into "${extension.aarDependenciesDir}/${dependencyProjectName}"
         }
@@ -145,7 +173,7 @@ class GenerateTask extends BaseTask {
         // In Eclipse you can then import this exploded ar as an Android project
         // and then reference not only the classes but also the android resources :D
         ["${extension.aarDependenciesDir}/${dependencyProjectName}/libs", "libs"].each { dest ->
-            copyJarIfNewer(p, dest, file, true)
+            copyJarIfNewer(p, dest, dependency.file, true)
         }
     }
 
@@ -177,16 +205,16 @@ class GenerateTask extends BaseTask {
                 into destDir
             }
         }
-        dependencies.findAll { File it ->
+        dependencies.findAll { AndroidDependency it ->
             // Check if there are any dependencies with the same name but different version
-            getDependencyName(it.name) == dependencyName && getVersionName(it.name) != versionName
-        }.each { File file ->
-            println "  Same dependency exists: ${dependencyFilename}, ${file.name}"
+            getDependencyName(it.file.name) == dependencyName && getVersionName(it.file.name) != versionName
+        }.each { AndroidDependency androidDependency ->
+            println "  Same dependency exists: ${dependencyFilename}, ${androidDependency.file.name}"
             sameDependencyExists = true
             def v1 = getVersionName(dependencyFilename)
-            def v2 = getVersionName(file.name)
-            // 'file' may be removed in previous loop
-            if (file.exists() && v1.isNewerThan(v2)) {
+            def v2 = getVersionName(androidDependency.file.name)
+            // 'androidDependency.file' may be removed in previous loop
+            if (androidDependency.file.exists() && v1.isNewerThan(v2)) {
                 println "  Found older dependency. Copy ${dependencyFilename} to all subprojects"
                 isNewer = true
                 // Should be replaced to jarFilename jar
@@ -307,7 +335,7 @@ android.library=true
 </classpath>
 """
         }
-        def jars = jarDependencies.collect { it.name } + aarDependencies.collect { getAarJarFilename(it) }
+        def jars = jarDependencies.collect { it.file.name } + aarDependencies.collect { getAarJarFilename(it.file) }
         jars = jars.findAll { !(it in libNames) }
         if (jars) {
             def entriesToAdd = jars.collect { it -> "\t<classpathentry kind=\"lib\" path=\"libs/${it}\"/>" }
