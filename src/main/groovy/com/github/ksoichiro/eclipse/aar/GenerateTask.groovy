@@ -65,6 +65,7 @@ class GenerateTask extends BaseTask {
                     def matchedDependency = configuration.dependencies.find { d -> convertedPathExtStripped.endsWith("${d.name}-release") }
                     if (matchedDependency instanceof ProjectDependency) {
                         // ProjectDependency should be not be exploded, just include in project.properties with relative path
+                        println "  Skip ProjectDependency: ${matchedDependency} for file ${aar}"
                     } else {
                         def d = new AndroidDependency()
                         d.with {
