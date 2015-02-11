@@ -316,12 +316,7 @@ android.library=true
             additionalClassPathEntries << "<classpathentry kind=\"lib\" path=\"libs/${jar}\"/>"
         }
         if (0 < additionalClassPathEntries.size()) {
-            def lines = []
-            classpathFile.eachLine { line ->
-                if (line != '</classpath>') {
-                    lines << line
-                }
-            }
+            def lines = classpathFile.readLines()?.findAll { line -> line != '</classpath>' }
             additionalClassPathEntries.each { classPathEntry ->
                 lines << "\t${classPathEntry}"
             }
