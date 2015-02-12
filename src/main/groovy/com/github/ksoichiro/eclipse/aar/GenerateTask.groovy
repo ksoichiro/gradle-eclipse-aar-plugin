@@ -5,8 +5,8 @@ import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.TaskAction
 
 class GenerateTask extends BaseTask {
-    Set<AndroidDependency> jarDependencies
-    Set<AndroidDependency> aarDependencies
+    Map<Project, Set<AndroidDependency>> jarDependencies
+    Map<Project, Set<AndroidDependency>> aarDependencies
 
     static {
         String.metaClass.isNewerThan = { String v2 ->
@@ -31,13 +31,13 @@ class GenerateTask extends BaseTask {
     @TaskAction
     def exec() {
         extension = project.eclipseAar
-        jarDependencies = [] as Set<AndroidDependency>
-        aarDependencies = [] as Set<AndroidDependency>
+        jarDependencies = [:]
+        aarDependencies = [:]
 
         findTargetProjects()
 
         projects.each { Project p ->
-            androidConfigurations().each { configuration ->
+            androidConfigurations(p).each { configuration ->
                 println "Aggregating JAR dependencies for project ${p.name} from ${configuration.name} configuration"
                 configuration.filter {
                     it.name.endsWith 'jar'
@@ -50,9 +50,12 @@ class GenerateTask extends BaseTask {
                         file = jar
                         artifactType = AndroidArtifactType.JAR
                     }
-                    jarDependencies << d
+                    if (!jarDependencies[p]) {
+                        jarDependencies[p] = [] as Set<AndroidDependency>
+                    }
+                    jarDependencies[p] << d
                 }
-                jarDependencies = getLatestDependencies(jarDependencies)
+                jarDependencies[p] = getLatestDependencies(jarDependencies[p])
 
                 println "Aggregating AAR dependencies for project ${p.name} from ${configuration.name} configuration"
                 configuration.filter { File aar ->
@@ -75,16 +78,19 @@ class GenerateTask extends BaseTask {
                             file = aar
                             artifactType = AndroidArtifactType.AAR
                         }
-                        aarDependencies << d
+                        if (!aarDependencies[p]) {
+                            aarDependencies[p] = [] as Set<AndroidDependency>
+                        }
+                        aarDependencies[p] << d
                     }
                 }
-                aarDependencies = getLatestDependencies(aarDependencies)
+                aarDependencies[p] = getLatestDependencies(aarDependencies[p])
             }
         }
 
         def extractDependenciesFrom = { Project p ->
-            jarDependencies.each { AndroidDependency d -> moveJarIntoLibs(p, d) }
-            aarDependencies.each { AndroidDependency d -> moveAndRenameAar(p, d) }
+            jarDependencies[p].each { AndroidDependency d -> moveJarIntoLibs(p, d) }
+            aarDependencies[p].each { AndroidDependency d -> moveAndRenameAar(p, d) }
         }
 
         projects.each {
@@ -104,12 +110,8 @@ class GenerateTask extends BaseTask {
         }
     }
 
-    def androidConfigurations() {
-        def result = []
-        projects.each {
-            result.addAll([it.configurations.compile, it.configurations.debugCompile])
-        }
-        result
+    static def androidConfigurations(Project p) {
+        [p.configurations.compile, p.configurations.debugCompile]
     }
 
     static String getAarJarFilename(File file) {
@@ -146,7 +148,7 @@ class GenerateTask extends BaseTask {
                         latestJarVersion = getVersionName(it.file.name)
                     }
                 }
-                latestDependencies << dependencies.find { getVersionName(it.file.name) == latestJarVersion }
+                latestDependencies << duplicateDependencies.find { getVersionName(it.file.name) == latestJarVersion }
             } else {
                 latestDependencies << dependency
             }
@@ -185,7 +187,7 @@ class GenerateTask extends BaseTask {
         def versionName = getVersionName(dependencyFilename)
         boolean isNewer = false
         boolean sameDependencyExists = false
-        def dependencies = isAarDependency ? aarDependencies : jarDependencies
+        def dependencies = isAarDependency ? aarDependencies[p] : jarDependencies[p]
         def copyClosure = isAarDependency ? { destDir ->
             p.copy {
                 from p.zipTree(dependency)
@@ -336,7 +338,7 @@ android.library=true
 </classpath>
 """
         }
-        def jars = jarDependencies.collect { it.file.name } + aarDependencies.collect { getAarJarFilename(it.file) }
+        def jars = jarDependencies[p].collect { it.file.name } + aarDependencies[p].collect { getAarJarFilename(it.file) }
         jars = jars.findAll { !(it in libNames) }
         if (jars) {
             def entriesToAdd = jars.collect { it -> "\t<classpathentry kind=\"lib\" path=\"libs/${it}\"/>" }
