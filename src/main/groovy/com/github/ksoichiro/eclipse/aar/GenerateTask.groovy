@@ -55,7 +55,6 @@ class GenerateTask extends BaseTask {
                     }
                     jarDependencies[p] << d
                 }
-                jarDependencies[p] = getLatestDependencies(jarDependencies[p])
 
                 println "Aggregating AAR dependencies for project ${p.name} from ${configuration.name} configuration"
                 configuration.filter { File aar ->
@@ -84,8 +83,11 @@ class GenerateTask extends BaseTask {
                         aarDependencies[p] << d
                     }
                 }
-                aarDependencies[p] = getLatestDependencies(aarDependencies[p])
             }
+        }
+        projects.each { Project p ->
+            jarDependencies[p] = getLatestDependencies(jarDependencies, jarDependencies[p])
+            aarDependencies[p] = getLatestDependencies(aarDependencies, aarDependencies[p])
         }
 
         def extractDependenciesFrom = { Project p ->
@@ -136,12 +138,19 @@ class GenerateTask extends BaseTask {
         baseFilename.lastIndexOf('-').with { it != -1 ? baseFilename.substring(it + 1) : baseFilename }
     }
 
-    static Set<AndroidDependency> getLatestDependencies(Set<AndroidDependency> dependencies) {
+    static Set<AndroidDependency> getLatestDependencies(Map<Project, Set<AndroidDependency>> dependencies, Set<AndroidDependency> projectDependencies) {
+        Set<AndroidDependency> allDependencies = []
+        for (Set<AndroidDependency> d : dependencies.values()) {
+            d.each { AndroidDependency dependency ->
+                allDependencies << dependency
+            }
+        }
+
         Set<AndroidDependency> latestDependencies = []
-        dependencies.each { dependency ->
+        projectDependencies.each { AndroidDependency dependency ->
             def dependencyName = getDependencyName(dependency.file.name)
             String latestJarVersion = "0"
-            def duplicateDependencies = dependencies.findAll { it.file.name.startsWith(dependencyName) }
+            def duplicateDependencies = allDependencies.findAll { it.file.name.startsWith(dependencyName) }
             if (1 < duplicateDependencies.size()) {
                 duplicateDependencies.each {
                     if (getVersionName(it.file.name).isNewerThan(latestJarVersion)) {
