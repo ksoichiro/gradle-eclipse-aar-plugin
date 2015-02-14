@@ -11,4 +11,5 @@ script:
     - ./gradlew --full-stacktrace -q clean assemble cobertura uploadArchives
 
 after_success:
-    - ./gradlew coveralls
+    - ls -al build/cobertura/
+    - ./gradlew coveralls --info
