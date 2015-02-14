@@ -106,8 +106,8 @@ class GenerateTask extends BaseTask {
             (jarDependencies[p] + aarDependencies[p]).each { AndroidDependency d ->
                 String convertedPath = d.file.path.tr(System.getProperty('file.separator'), '.')
                 ResolvedDependency matchedDependency = allConfigurationsDependencies.find { k, v ->
-                    convertedPath.contains("${v.moduleGroup}.${v.moduleName}")
-                }.value
+                    convertedPath.contains("${v.moduleGroup}.${v.moduleName}") && v.moduleVersion == d.version
+                }?.value
                 if (matchedDependency) {
                     d.with {
                         group = matchedDependency.moduleGroup
@@ -174,15 +174,21 @@ class GenerateTask extends BaseTask {
             def dependencyName = getDependencyName(dependency.file.name)
             String latestJarVersion = "0"
             def duplicateDependencies = allDependencies.findAll { it.file.name.startsWith(dependencyName) }
+            AndroidDependency latestDependency
             if (1 < duplicateDependencies.size()) {
                 duplicateDependencies.each {
                     if (getVersionName(it.file.name).isNewerThan(latestJarVersion)) {
                         latestJarVersion = getVersionName(it.file.name)
                     }
                 }
-                latestDependencies << duplicateDependencies.find { getVersionName(it.file.name) == latestJarVersion }
+                latestDependency = duplicateDependencies.find { getVersionName(it.file.name) == latestJarVersion }
             } else {
-                latestDependencies << dependency
+                latestJarVersion = getVersionName(dependency.file.name)
+                latestDependency = dependency
+            }
+            if (latestDependency) {
+                latestDependency.version = latestJarVersion
+                latestDependencies << latestDependency
             }
         }
         latestDependencies
