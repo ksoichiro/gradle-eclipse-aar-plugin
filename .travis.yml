@@ -12,4 +12,6 @@ script:
 
 after_success:
     - ls -al build/cobertura/
+    - ls -al build/reports/cobertura/coverage.xml
+    - cat build/reports/cobertura/coverage.xml
     - ./gradlew coveralls --info

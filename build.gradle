@@ -64,6 +64,8 @@ cobertura {
     coverageSourceDirs = sourceSets.main.groovy.srcDirs
 }
 
+coveralls.sourceDirs = sourceSets.main.groovy.srcDirs.collect()
+
 afterEvaluate { project ->
     uploadArchives {
         if (isReleaseBuild) {
