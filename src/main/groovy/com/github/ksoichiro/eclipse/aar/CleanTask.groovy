@@ -14,7 +14,11 @@ class CleanTask extends BaseTask {
 
         findTargetProjects()
         projects.each { Project p ->
-            [ p.file(extension.aarDependenciesDir), p.file('libs') ].each {
+            def targets = [ p.file(extension.aarDependenciesDir) ]
+            if (extension.cleanLibsDirectoryEnabled) {
+                targets << p.file('libs')
+            }
+            targets.each {
                 if (it.exists()) {
                     p.delete(it)
                     println "Deleted ${it}"
