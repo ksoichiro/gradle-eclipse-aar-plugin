@@ -1,5 +1,6 @@
 plugins {
     id 'net.saliman.cobertura' version '2.2.5'
+    id 'com.github.kt3k.coveralls' version '2.1.0'
 }
 
 allprojects {
@@ -44,7 +45,8 @@ def password = hasProperty("nexusPassword") ? project.getProperty("nexusPassword
 
 dependencies {
     compile gradleApi()
-    compile 'org.codehaus.groovy:groovy-all:2.4.0'
+    compile localGroovy()
+    testCompile 'com.android.tools.build:gradle:1.0.0'
 }
 
 repositories {

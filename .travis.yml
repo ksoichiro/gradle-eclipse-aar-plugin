@@ -1,9 +1,14 @@
-language: groovy
+language: android
 
-jdk:
-  - oraclejdk7
-  - openjdk7
-  - openjdk6
+android:
+  components:
+    - extra-android-m2repository
+
+  licenses:
+    - 'android-sdk-license-.+'
 
 script:
-  - ./gradlew clean assemble test uploadArchives
+    - ./gradlew --full-stacktrace -q clean assemble cobertura uploadArchives
+
+after_success:
+    - ./gradlew coveralls

@@ -8,3 +8,4 @@ bin/
 gen/
 libs/
 aarDependencies/
+.classpath
