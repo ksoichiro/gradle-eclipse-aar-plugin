@@ -22,10 +22,10 @@ class MulitiProjectSpec extends BaseSpec {
                 .withName(':app')
                 .build()
 
-        project.subprojects.each {
+        project.subprojects.each { Project p ->
             ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath'].each {
-                if (project.file(it).exists()) {
-                    project.delete(it)
+                if (p.file(it).exists()) {
+                    p.delete(it)
                 }
             }
         }
@@ -80,9 +80,9 @@ class MulitiProjectSpec extends BaseSpec {
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
-\t<classpathentry kind="lib" path="libs/support-annotations-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/recyclerview-v7-21.0.0.jar"/>
-\t<classpathentry kind="lib" path="libs/support-v4-21.0.2.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-support-annotations-21.0.2.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
 </classpath>
 """
         classpathAppFile.text == """\
@@ -94,12 +94,12 @@ class MulitiProjectSpec extends BaseSpec {
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
-\t<classpathentry kind="lib" path="libs/library-2.4.0.jar"/>
-\t<classpathentry kind="lib" path="libs/support-annotations-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/appcompat-v7-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/floatingactionbutton-1.0.7.jar"/>
-\t<classpathentry kind="lib" path="libs/support-v4-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/recyclerview-v7-21.0.0.jar"/>
+\t<classpathentry kind="lib" path="libs/com.nineoldandroids-library-2.4.0.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-support-annotations-21.0.2.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-appcompat-v7-21.0.2.jar"/>
+\t<classpathentry kind="lib" path="libs/com.melnykov-floatingactionbutton-1.0.7.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
+\t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
 </classpath>
 """
     }
