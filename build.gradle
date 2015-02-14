@@ -47,10 +47,12 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
     testCompile 'com.android.tools.build:gradle:1.0.0'
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.3-SNAPSHOT'
 }
 
 repositories {
     mavenCentral()
+    maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
 }
 
 install {

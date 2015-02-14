@@ -4,29 +4,26 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.Assert
-import org.junit.Test
+import spock.lang.Specification
 
-import static org.junit.Assert.assertTrue
-
-class SingleProjectTest {
+class SingleProjectSpec extends Specification {
     static final String PLUGIN_ID = 'com.github.ksoichiro.eclipse.aar'
 
-    @Test
-    void apply() {
+    def "apply"() {
+        setup:
         Project project = ProjectBuilder.builder().build()
+
+        when:
         project.plugins.apply PLUGIN_ID
 
-        // Check tasks
-        assertTrue(project.tasks.cleanEclipseDependencies instanceof CleanTask)
-        assertTrue(project.tasks.generateEclipseDependencies instanceof GenerateTask)
-
-        // Check extension
-        assertTrue(project.extensions.eclipseAar instanceof AarPluginExtension)
+        then:
+        project.tasks.cleanEclipseDependencies instanceof CleanTask
+        project.tasks.generateEclipseDependencies instanceof GenerateTask
+        project.extensions.eclipseAar instanceof AarPluginExtension
     }
 
-    @Test
-    void normalProject() {
+    def "normalProject"() {
+        setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
         ['.gradle', 'userHome', 'aarDependencies', 'libs'].each {
             if (project.file(it).exists()) {
@@ -48,10 +45,13 @@ class SingleProjectTest {
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
 
+        when:
         project.tasks.generateEclipseDependencies.execute()
         File classpathFile = project.file('.classpath')
-        assertTrue(classpathFile.exists())
-        Assert.assertEquals("""\
+
+        then:
+        classpathFile.exists()
+        classpathFile.text == """\
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 \t<classpathentry kind="src" path="src"/>
@@ -68,6 +68,6 @@ class SingleProjectTest {
 \t<classpathentry kind="lib" path="libs/support-v4-21.0.2.jar"/>
 \t<classpathentry kind="lib" path="libs/recyclerview-v7-21.0.0.jar"/>
 </classpath>
-""", classpathFile.text)
+"""
     }
 }
