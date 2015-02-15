@@ -352,7 +352,7 @@ android.library=true
 
     void generateEclipseClasspathFileForParent(Project p) {
         def classpathFile = p.file('.classpath')
-        def libNames = []
+        List<String> libNames = []
         if (classpathFile.exists()) {
             // Aggregate dependencies
             def classPaths = new XmlSlurper().parseText(classpathFile.text)
@@ -372,8 +372,8 @@ android.library=true
 </classpath>
 """
         }
-        def jars = jarDependencies[p].collect { "${it.getQualifiedName()}.jar" } + aarDependencies[p].collect { "${it.getQualifiedName()}.jar" }
-        jars = jars.findAll { !(it in libNames) }
+        List<String> jars = jarDependencies[p].collect { "${it.getQualifiedName()}.jar" } + aarDependencies[p].collect { "${it.getQualifiedName()}.jar" }
+        jars = jars.findAll { libNames.find { lib -> lib == it} == null }
         if (jars) {
             def entriesToAdd = jars.collect { it -> "\t<classpathentry kind=\"lib\" path=\"libs/${it}\"/>" }
             def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
