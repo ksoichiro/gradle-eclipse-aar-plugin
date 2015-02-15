@@ -6,6 +6,8 @@ import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.tasks.TaskAction
 
+import java.util.regex.Matcher
+
 class GenerateTask extends BaseTask {
     Map<Project, Set<AndroidDependency>> jarDependencies
     Map<Project, Set<AndroidDependency>> aarDependencies
@@ -134,6 +136,7 @@ class GenerateTask extends BaseTask {
                 generateEclipseProjectFile(p, d)
             }
             generateEclipseClasspathFileForParent(p)
+            generateProjectPropertiesFileForParent(p)
         }
     }
 
@@ -370,14 +373,60 @@ android.library=true
 </classpath>
 """
         }
-        List<String> jars = jarDependencies[p].collect { "${it.getQualifiedName()}.jar" } + aarDependencies[p].collect { "${it.getQualifiedName()}.jar" }
-        jars = jars.findAll { libNames.find { lib -> lib == it} == null }
+        List<String> jars = jarDependencies[p].collect { "${it.getQualifiedName()}.jar" } + aarDependencies[p].collect {
+            "${it.getQualifiedName()}.jar"
+        }
+        jars = jars.findAll { libNames.find { lib -> lib == it } == null }
         if (jars) {
             def entriesToAdd = jars.collect { it -> "\t<classpathentry kind=\"lib\" path=\"libs/${it}\"/>" }
             def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
             lines += entriesToAdd
             lines += "</classpath>${System.getProperty('line.separator')}"
             classpathFile.text = lines.join(System.getProperty('line.separator'))
+        }
+    }
+
+    void generateProjectPropertiesFileForParent(Project p) {
+        def projectPropertiesFile = p.file('project.properties')
+        List<String> libNames = []
+        int maxReference = 0
+        if (projectPropertiesFile.exists()) {
+            Properties props = new Properties()
+            projectPropertiesFile.withInputStream { stream -> props.load(stream) }
+            props.propertyNames().findAll {
+                it =~ /^android\.library\.reference\.[0-9]+/
+            }.each {
+                Matcher mValue = props[it] =~ /^${extension.aarDependenciesDir}\\/(.*)/
+                if (mValue.matches()) {
+                    libNames << mValue[0][1]
+                    Matcher mName = it =~ /^android\.library\.reference\.([0-9]+)/
+                    if (mName.matches()) {
+                        int ref = mName[0][1].toInteger()
+                        if (maxReference < ref) {
+                            maxReference = ref
+                        }
+                    }
+                }
+            }
+        } else {
+            // Create minimum properties file
+            projectPropertiesFile.text = """\
+target=${extension.androidTarget}
+"""
+        }
+        List<String> aars = aarDependencies[p].collect { it.getQualifiedName() }
+        aars = aars.findAll { libNames.find { lib -> lib == it } == null }
+        if (aars) {
+            def entriesToAdd = []
+            aars.each {
+                maxReference++
+                entriesToAdd << "android.library.reference.${maxReference}=${extension.aarDependenciesDir}/${it}"
+            }
+            def content = projectPropertiesFile.text
+            if (!content.endsWith(System.getProperty('line.separator'))) {
+                content += System.getProperty('line.separator')
+            }
+            projectPropertiesFile.text = content + entriesToAdd.join(System.getProperty('line.separator')) + System.getProperty('line.separator')
         }
     }
 }

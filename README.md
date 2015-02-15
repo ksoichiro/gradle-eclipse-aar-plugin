@@ -69,21 +69,6 @@ If you use Gradle wrapper, you don't have to install Gradle.
 * `gradlew.sh`
 * `gradlew.bat`
 
-### Configure project properties
-
-```
-target=android-21
-
-# Define your dependencies: aarDependencies/GROUP-ARTIFACT_ID-VERSION
-android.library.reference.1=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
-android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
-android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
-android.library.reference.4=aarDependencies/com.android.support-recyclerview-v7-21.0.0
-android.library.reference.5=aarDependencies/com.android.support-appcompat-v7-21.0.2
-```
-
-This will be generated automatically in the future.
-
 ### Generate dependencies
 
 ```sh
@@ -107,6 +92,14 @@ and AAR dependencies will be exploded and copied to `aarDependencies` directory 
 
 1. Confirm your device is connected.
 1. Right click your main project and select `Run As` > `Android Application`.
+
+### project.properties?
+
+Eclipse ADT plugin uses `project.properties` file to manage library project dependencies.  
+
+If you don't have `project.properties` file, this plugin will create it.  
+If you have `project.properties` file but don't have the required AAR dependency entries in it, this plugin will add these entries, too.  
+Therefore you don't have to care about them.
 
 ### .classpath files?
 

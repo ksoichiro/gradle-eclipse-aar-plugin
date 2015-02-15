@@ -9,3 +9,4 @@ gen/
 libs/
 aarDependencies/
 .classpath
+project.properties
