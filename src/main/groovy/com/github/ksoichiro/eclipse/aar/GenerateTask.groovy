@@ -298,11 +298,11 @@ android.library=true
         p.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/.classpath").text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry kind="output" path="bin/classes"/>
+\t<classpathentry kind="src" path="gen"/>
+\t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+\t<classpathentry kind="output" path="bin/classes"/>
 </classpath>
 """
     }
@@ -313,37 +313,37 @@ android.library=true
         p.file("${extension.aarDependenciesDir}/${name}/.project").text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>${extension.projectNamePrefix}${projectName}-${name}</name>
-	<comment></comment>
-	<projects>
-	</projects>
-	<buildSpec>
-		<buildCommand>
-			<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>com.android.ide.eclipse.adt.ApkBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-	</buildSpec>
-	<natures>
-		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
-	</natures>
+\t<name>${extension.projectNamePrefix}${projectName}-${name}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t</natures>
 </projectDescription>
 """
     }
