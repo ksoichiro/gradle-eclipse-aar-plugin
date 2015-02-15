@@ -11,6 +11,7 @@ import java.util.regex.Matcher
 class GenerateTask extends BaseTask {
     Map<Project, Set<AndroidDependency>> jarDependencies
     Map<Project, Set<AndroidDependency>> aarDependencies
+    Map<Project, Set<AndroidDependency>> projectDependencies
 
     static {
         String.metaClass.isNewerThan = { String v2 ->
@@ -37,6 +38,7 @@ class GenerateTask extends BaseTask {
         extension = project.eclipseAar
         jarDependencies = [:]
         aarDependencies = [:]
+        projectDependencies = [:]
 
         findTargetProjects()
 
@@ -84,7 +86,16 @@ class GenerateTask extends BaseTask {
                     def localDependency = configuration.dependencies.find { d -> convertedPathExtStripped.endsWith("${d.name}-release") }
                     if (localDependency instanceof ProjectDependency) {
                         // ProjectDependency should be not be exploded, just include in project.properties with relative path
-                        println "  Skip ProjectDependency: ${localDependency} for file ${aar}"
+                        Project dependencyProject = projects.find { it.name == ((ProjectDependency) localDependency).dependencyProject.name }
+                        def d = new AndroidDependency()
+                        d.with {
+                            name = dependencyProject.name
+                            artifactType = AndroidArtifactType.PROJECT
+                        }
+                        if (!projectDependencies[p]) {
+                            projectDependencies[p] = [] as Set<AndroidDependency>
+                        }
+                        projectDependencies[p] << d
                     } else {
                         def d = new AndroidDependency()
                         d.with {
@@ -389,6 +400,7 @@ android.library=true
     void generateProjectPropertiesFileForParent(Project p) {
         def projectPropertiesFile = p.file('project.properties')
         List<String> libNames = []
+        List<String> projectNames = []
         int maxReference = 0
         if (projectPropertiesFile.exists()) {
             Properties props = new Properties()
@@ -406,6 +418,18 @@ android.library=true
                             maxReference = ref
                         }
                     }
+                } else {
+                    mValue = props[it] =~ /^\.\.\/(.*)/
+                    if (mValue.matches()) {
+                        projectNames << mValue[0][1]
+                        Matcher mName = it =~ /^android\.library\.reference\.([0-9]+)/
+                        if (mName.matches()) {
+                            int ref = mName[0][1].toInteger()
+                            if (maxReference < ref) {
+                                maxReference = ref
+                            }
+                        }
+                    }
                 }
             }
         } else {
@@ -414,14 +438,22 @@ android.library=true
 target=${extension.androidTarget}
 """
         }
+
+        def entriesToAdd = []
+        List<String> list = projectDependencies[p]?.collect { it.getQualifiedName().replaceFirst('^:', '') }
+        list = list?.findAll { projectNames.find { prj -> prj == it } == null }
+        list?.each {
+            maxReference++
+            entriesToAdd << "android.library.reference.${maxReference}=../${it}"
+        }
+
         List<String> aars = aarDependencies[p].collect { it.getQualifiedName() }
-        aars = aars.findAll { libNames.find { lib -> lib == it } == null }
-        if (aars) {
-            def entriesToAdd = []
-            aars.each {
-                maxReference++
-                entriesToAdd << "android.library.reference.${maxReference}=${extension.aarDependenciesDir}/${it}"
-            }
+        aars = aars?.findAll { libNames.find { lib -> lib == it } == null }
+        aars?.each {
+            maxReference++
+            entriesToAdd << "android.library.reference.${maxReference}=${extension.aarDependenciesDir}/${it}"
+        }
+        if (0 < entriesToAdd.size()) {
             def content = projectPropertiesFile.text
             if (!content.endsWith(System.getProperty('line.separator'))) {
                 content += System.getProperty('line.separator')

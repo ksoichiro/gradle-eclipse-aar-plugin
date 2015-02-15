@@ -3,6 +3,7 @@ package com.github.ksoichiro.eclipse.aar
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.testfixtures.ProjectBuilder
 
@@ -37,8 +38,9 @@ class MulitiProjectSpec extends BaseSpec {
             }
         }
 
-        projectLibrary.plugins.apply AppPlugin
-        projectApp.plugins.apply LibraryPlugin
+        projectLibrary.plugins.apply LibraryPlugin
+        projectApp.plugins.apply AppPlugin
+
         project.plugins.apply PLUGIN_ID
 
         projectLibrary.dependencies {
@@ -53,7 +55,7 @@ class MulitiProjectSpec extends BaseSpec {
         projectLibrary.android {
             compileSdkVersion 1 // Whatever, but required
         }
-        projectApp.dependencies {
+        projectApp.dependencies { DependencyHandler it ->
             compile 'com.android.support:appcompat-v7:21.0.2'
             compile 'com.nineoldandroids:library:2.4.0'
             compile 'com.melnykov:floatingactionbutton:1.0.7'
@@ -111,10 +113,11 @@ android.library.reference.1=aarDependencies/com.android.support-recyclerview-v7-
 android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
 """
         projectPropertiesAppFile.text == """target=android-21
-android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
-android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
-android.library.reference.3=aarDependencies/com.android.support-support-v4-21.0.2
-android.library.reference.4=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.1=../library
+android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.4=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-21.0.0
 """
     }
 }
