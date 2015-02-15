@@ -23,7 +23,7 @@ class MulitiProjectSpec extends BaseSpec {
                 .build()
 
         project.subprojects.each { Project p ->
-            ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath'].each {
+            ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', 'project.properties'].each {
                 if (p.file(it).exists()) {
                     p.delete(it)
                 }
@@ -67,6 +67,8 @@ class MulitiProjectSpec extends BaseSpec {
         project.tasks.generateEclipseDependencies.execute()
         File classpathLibraryFile = projectLibrary.file('.classpath')
         File classpathAppFile = projectApp.file('.classpath')
+        File projectPropertiesLibraryFile = projectLibrary.file('project.properties')
+        File projectPropertiesAppFile = projectApp.file('project.properties')
 
         then:
         classpathLibraryFile.exists()
@@ -101,6 +103,18 @@ class MulitiProjectSpec extends BaseSpec {
 \t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
 \t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
 </classpath>
+"""
+        projectPropertiesLibraryFile.exists()
+        projectPropertiesAppFile.exists()
+        projectPropertiesLibraryFile.text == """target=android-21
+android.library.reference.1=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
+"""
+        projectPropertiesAppFile.text == """target=android-21
+android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.3=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.4=aarDependencies/com.android.support-recyclerview-v7-21.0.0
 """
     }
 }
