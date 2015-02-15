@@ -73,12 +73,12 @@ If you use Gradle wrapper, you don't have to install Gradle.
 ```
 target=android-21
 
-# Define your dependencies: aarDependencies/ARTIFACT_ID-VERSION
-android.library.reference.1=aarDependencies/android-observablescrollview-1.5.0
-android.library.reference.2=aarDependencies/support-v4-21.0.2
-android.library.reference.3=aarDependencies/floatingactionbutton-1.0.7
-android.library.reference.4=aarDependencies/recyclerview-v7-21.0.0
-android.library.reference.5=aarDependencies/appcompat-v7-21.0.2
+# Define your dependencies: aarDependencies/GROUP-ARTIFACT_ID-VERSION
+android.library.reference.1=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
+android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.4=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.5=aarDependencies/com.android.support-appcompat-v7-21.0.2
 ```
 
 This will be generated automatically in the future.
@@ -106,6 +106,15 @@ and AAR dependencies will be exploded and copied to `aarDependencies` directory 
 
 1. Confirm your device is connected.
 1. Right click your main project and select `Run As` > `Android Application`.
+
+### .classpath files?
+
+Eclipse has `.classpath` files to manage dependencies.  
+For Android apps, each library projects must be declared as `<classpathentry>` tags in `.classpath` file.
+
+If you don't have `.classpath` file, this plugin will create it.  
+If you have `.classpath` file but don't have `<classpathentry>`s for the required libraries in it, this plugin will add these entries, too.  
+Therefore you don't have to care about them.
 
 ## Configurations
 
