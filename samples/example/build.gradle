@@ -32,4 +32,10 @@ eclipseAar {
 
 android {
     compileSdkVersion 1
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src']
+        }
+    }
 }

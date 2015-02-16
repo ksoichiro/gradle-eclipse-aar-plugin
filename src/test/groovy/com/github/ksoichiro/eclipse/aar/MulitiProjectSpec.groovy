@@ -54,6 +54,7 @@ class MulitiProjectSpec extends BaseSpec {
         }
         projectLibrary.android {
             compileSdkVersion 1 // Whatever, but required
+            sourceSets.main.java.srcDirs = [ 'src/main/java' ]
         }
         projectApp.dependencies { DependencyHandler it ->
             compile 'com.android.support:appcompat-v7:21.0.2'
@@ -63,6 +64,7 @@ class MulitiProjectSpec extends BaseSpec {
         }
         projectApp.android {
             compileSdkVersion 1 // Whatever, but required
+            sourceSets.main.java.srcDirs = [ 'src/main/java' ]
         }
 
         when:
@@ -75,10 +77,9 @@ class MulitiProjectSpec extends BaseSpec {
         then:
         classpathLibraryFile.exists()
         classpathAppFile.exists()
-        classpathLibraryFile.text == """\
-<?xml version="1.0" encoding="UTF-8"?>
+        classpathLibraryFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="src/main/java"/>
 \t<classpathentry kind="src" path="gen"/>
 \t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
@@ -89,10 +90,9 @@ class MulitiProjectSpec extends BaseSpec {
 \t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
 </classpath>
 """
-        classpathAppFile.text == """\
-<?xml version="1.0" encoding="UTF-8"?>
+        classpathAppFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="src/main/java"/>
 \t<classpathentry kind="src" path="gen"/>
 \t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>

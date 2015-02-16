@@ -363,20 +363,36 @@ android.library=true
     }
 
     void generateEclipseClasspathFileForParent(Project p) {
+        // Use srcDirs definition for classpath entry
+        def androidSrcDirs = p.android?.sourceSets?.main?.java?.srcDirs
+        if (!androidSrcDirs) {
+            androidSrcDirs = ['src/main/java']
+        }
+        if (!androidSrcDirs.contains('gen')) {
+            androidSrcDirs << 'gen'
+        }
+        def androidSrcPaths = []
+        androidSrcDirs.each {
+            androidSrcPaths << (it.toString() - p.projectDir.path).replaceFirst("^[/\\\\]", '')
+        }
         def classpathFile = p.file('.classpath')
+        List<String> srcPaths = []
         List<String> libNames = []
         if (classpathFile.exists()) {
-            // Aggregate dependencies
+            // Aggregate src paths and dependencies
             def classPaths = new XmlSlurper().parseText(classpathFile.text)
+            def srcPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'src' }
+            srcPaths = srcPathEntries.collect { it.@path.text() }
             def libClassPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'lib' }
             libNames = libClassPathEntries.collect { it.@path.text().replaceFirst('^libs/', '') }
         } else {
             // Create minimum classpath file
+            srcPaths = androidSrcPaths
+            def srcPathEntries = androidSrcPaths.collect { """
+\t<classpathentry kind="src" path="${it}"/>""" }.join('')
             classpathFile.text = """\
 <?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-\t<classpathentry kind="src" path="src"/>
-\t<classpathentry kind="src" path="gen"/>
+<classpath>${srcPathEntries}
 \t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
@@ -384,6 +400,16 @@ android.library=true
 </classpath>
 """
         }
+
+        androidSrcPaths = androidSrcPaths.findAll { srcPaths.find { path -> path == it} == null }
+        if (androidSrcPaths) {
+            def entriesToAdd = androidSrcPaths.collect { it -> "\t<classpathentry kind=\"src\" path=\"${it}\"/>" }
+            def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
+            lines += entriesToAdd
+            lines += "</classpath>${System.getProperty('line.separator')}"
+            classpathFile.text = lines.join(System.getProperty('line.separator'))
+        }
+
         List<String> jars = jarDependencies[p].collect { "${it.getQualifiedName()}.jar" } + aarDependencies[p].collect {
             "${it.getQualifiedName()}.jar"
         }

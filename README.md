@@ -55,6 +55,16 @@ eclipseAar {
 // (Even if you don't develop with Gradle, write following at least)
 android {
     compileSdkVersion 1
+
+    // Source directory is 'src/main/java' by default.
+    // This will be added as a classpath entry in .classpath file.
+    // If you'd like to set src directory other than that,
+    // override it with sourceSets.main.java.srcDirs like this.
+    sourceSets {
+        main {
+            java.srcDirs = [ 'src' ]
+        }
+    }
 }
 ```
 

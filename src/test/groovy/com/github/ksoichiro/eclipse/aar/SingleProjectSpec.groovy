@@ -42,6 +42,7 @@ class SingleProjectSpec extends BaseSpec {
             compile 'com.melnykov:floatingactionbutton:1.0.7'
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
+        project.android.sourceSets.main.java.srcDirs = [ 'src' ]
 
         when:
         project.tasks.generateEclipseDependencies.execute()
@@ -50,8 +51,7 @@ class SingleProjectSpec extends BaseSpec {
 
         then:
         classpathFile.exists()
-        classpathFile.text == """\
-<?xml version="1.0" encoding="UTF-8"?>
+        classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 \t<classpathentry kind="src" path="src"/>
 \t<classpathentry kind="src" path="gen"/>
@@ -69,8 +69,7 @@ class SingleProjectSpec extends BaseSpec {
 </classpath>
 """
         projectPropertiesFile.exists()
-        projectPropertiesFile.text == """\
-target=android-21
+        projectPropertiesFile.text == """target=android-21
 android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
 android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
 android.library.reference.3=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
@@ -101,12 +100,10 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
             compile 'com.melnykov:floatingactionbutton:1.0.7'
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
+        project.android.sourceSets.main.java.srcDirs = [ 'src' ]
         File classpathFile = project.file('.classpath')
-        classpathFile.text = """\
-<?xml version="1.0" encoding="UTF-8"?>
+        classpathFile.text = """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-\t<classpathentry kind="src" path="src"/>
-\t<classpathentry kind="src" path="gen"/>
 \t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
@@ -125,16 +122,15 @@ android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.
 
         then:
         classpathFile.exists()
-        classpathFile.text == """\
-<?xml version="1.0" encoding="UTF-8"?>
+        classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-\t<classpathentry kind="src" path="src"/>
-\t<classpathentry kind="src" path="gen"/>
 \t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
 \t<classpathentry kind="lib" path="libs/com.nineoldandroids-library-2.4.0.jar"/>
+\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="gen"/>
 \t<classpathentry kind="lib" path="libs/com.android.support-support-annotations-21.0.2.jar"/>
 \t<classpathentry kind="lib" path="libs/com.android.support-appcompat-v7-21.0.2.jar"/>
 \t<classpathentry kind="lib" path="libs/com.melnykov-floatingactionbutton-1.0.7.jar"/>
@@ -144,8 +140,7 @@ android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.
 </classpath>
 """
         projectPropertiesFile.exists()
-        projectPropertiesFile.text == """\
-target=android-21
+        projectPropertiesFile.text == """target=android-21
 android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
 android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
 android.library.reference.3=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
