@@ -5,6 +5,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.tasks.TaskAction
+import org.gradle.mvn3.org.apache.maven.artifact.versioning.ComparableVersion
 
 import java.util.regex.Matcher
 
@@ -12,22 +13,7 @@ class GenerateTask extends BaseTask {
     Map<Project, Set<AndroidDependency>> jarDependencies
     Map<Project, Set<AndroidDependency>> aarDependencies
     Map<Project, Set<AndroidDependency>> projectDependencies
-
-    static {
-        String.metaClass.isNewerThan = { String v2 ->
-            String v1 = delegate
-            def versions1 = v1.tokenize('.')
-            def versions2 = v2.tokenize('.')
-            for (int i = 0; i < Math.min(versions1.size(), versions2.size()); i++) {
-                int n1 = versions1[i].toInteger()
-                int n2 = versions2[i].toInteger()
-                if (n2 < n1) {
-                    return true
-                }
-            }
-            versions2.size() < versions1.size()
-        }
-    }
+    Map<String, ResolvedDependency> allConfigurationsDependencies
 
     GenerateTask() {
         description = 'Used for Eclipse. Copies all AAR dependencies for library directory.'
@@ -42,7 +28,7 @@ class GenerateTask extends BaseTask {
 
         findTargetProjects()
 
-        def allConfigurationsDependencies = [:] as Map<String, ResolvedDependency>
+        allConfigurationsDependencies = [:]
         def aggregateResolvedDependencies
         aggregateResolvedDependencies = { Set<ResolvedDependency> it, String indent ->
             it.each { ResolvedDependency dependency ->
@@ -163,17 +149,53 @@ class GenerateTask extends BaseTask {
         filename.lastIndexOf('.').with { it != -1 ? filename[0..<it] : filename }
     }
 
-    static String getDependencyName(String jarFilename) {
-        def baseFilename = getBaseName(jarFilename)
-        baseFilename.lastIndexOf('-').with { it != -1 ? baseFilename[0..<it] : baseFilename }
+    String getDependencyName(File file) {
+        // '-' is not always the separator of version, version itself often has '-'.
+        // So we should find version from resolved dependencies.
+        // Path: .../modules-2/files-2.1/group/artifact/version/hash/artifact-version.ext
+        def baseFilename = getBaseName(file.name)
+        String target = file.path.tr(System.getProperty('file.separator'), '-')
+        String name = null
+        allConfigurationsDependencies.each { k, v ->
+            if ("${v.moduleName}-${v.moduleVersion}" == baseFilename) {
+                // This may be the dependency of the file
+                // Find group from file path and check qualified name matches
+                if (target ==~ /.*-${v.moduleGroup}-${v.moduleName}-${v.moduleVersion}-.*/) {
+                    // This is the one
+                    name = v.moduleName
+                }
+            }
+        }
+        if (!name) {
+            println "ERROR: Could not find name: ${target}"
+        }
+        return name
     }
 
-    static String getVersionName(String jarFilename) {
-        def baseFilename = getBaseName(jarFilename)
-        baseFilename.lastIndexOf('-').with { it != -1 ? baseFilename.substring(it + 1) : baseFilename }
+    String getVersionName(File file) {
+        // '-' is not always the separator of version, version itself often has '-'.
+        // So we should find version from resolved dependencies.
+        // Path: .../modules-2/files-2.1/group/artifact/version/hash/artifact-version.ext
+        def baseFilename = getBaseName(file.name)
+        String target = file.path.tr(System.getProperty('file.separator'), '-')
+        String version = null
+        allConfigurationsDependencies.each { k, v ->
+            if ("${v.moduleName}-${v.moduleVersion}" == baseFilename) {
+                // This may be the dependency of the file
+                // Find group from file path and check qualified name matches
+                if (target ==~ /.*-${v.moduleGroup}-${v.moduleName}-${v.moduleVersion}-.*/) {
+                    // This is the one
+                    version = v.moduleVersion
+                }
+            }
+        }
+        if (!version) {
+            println "ERROR: Could not find version: ${target}"
+        }
+        return version
     }
 
-    static Set<AndroidDependency> getLatestDependencies(Map<Project, Set<AndroidDependency>> dependencies, Set<AndroidDependency> projectDependencies) {
+    Set<AndroidDependency> getLatestDependencies(Map<Project, Set<AndroidDependency>> dependencies, Set<AndroidDependency> projectDependencies) {
         Set<AndroidDependency> allDependencies = []
         for (Set<AndroidDependency> d : dependencies.values()) {
             d.each { AndroidDependency dependency ->
@@ -183,19 +205,19 @@ class GenerateTask extends BaseTask {
 
         Set<AndroidDependency> latestDependencies = []
         projectDependencies.each { AndroidDependency dependency ->
-            def dependencyName = getDependencyName(dependency.file.name)
+            def dependencyName = getDependencyName(dependency.file)
             String latestJarVersion = "0"
             def duplicateDependencies = allDependencies.findAll { it.file.name.startsWith(dependencyName) }
             AndroidDependency latestDependency
             if (1 < duplicateDependencies.size()) {
                 duplicateDependencies.each {
-                    if (getVersionName(it.file.name).isNewerThan(latestJarVersion)) {
-                        latestJarVersion = getVersionName(it.file.name)
+                    if (versionIsNewerThan(getVersionName(it.file), latestJarVersion)) {
+                        latestJarVersion = getVersionName(it.file)
                     }
                 }
-                latestDependency = duplicateDependencies.find { getVersionName(it.file.name) == latestJarVersion }
+                latestDependency = duplicateDependencies.find { getVersionName(it.file) == latestJarVersion }
             } else {
-                latestJarVersion = getVersionName(dependency.file.name)
+                latestJarVersion = getVersionName(dependency.file)
                 latestDependency = dependency
             }
             if (latestDependency) {
@@ -229,8 +251,8 @@ class GenerateTask extends BaseTask {
     void copyJarIfNewer(Project p, String libsDir, AndroidDependency dependency, boolean isAarDependency) {
         def dependencyFilename = dependency.file.name
         def dependencyProjectName = dependency.getQualifiedName()
-        def dependencyName = getDependencyName(dependencyFilename)
-        def versionName = getVersionName(dependencyFilename)
+        def dependencyName = getDependencyName(dependency.file)
+        def versionName = getVersionName(dependency.file)
         boolean isNewer = false
         boolean sameDependencyExists = false
         def dependencies = isAarDependency ? aarDependencies[p] : jarDependencies[p]
@@ -257,14 +279,14 @@ class GenerateTask extends BaseTask {
         }
         dependencies.findAll { AndroidDependency it ->
             // Check if there are any dependencies with the same name but different version
-            getDependencyName(it.file.name) == dependencyName && getVersionName(it.file.name) != versionName
+            getDependencyName(it.file) == dependencyName && getVersionName(it.file) != versionName
         }.each { AndroidDependency androidDependency ->
             println "  Same dependency exists: ${dependencyFilename}, ${androidDependency.file.name}"
             sameDependencyExists = true
-            def v1 = getVersionName(dependencyFilename)
-            def v2 = getVersionName(androidDependency.file.name)
+            def v1 = getVersionName(dependency.file)
+            def v2 = getVersionName(androidDependency.file)
             // 'androidDependency.file' may be removed in previous loop
-            if (androidDependency.file.exists() && v1.isNewerThan(v2)) {
+            if (androidDependency.file.exists() && versionIsNewerThan(v1, v2)) {
                 println "  Found older dependency. Copy ${dependencyFilename} to all subprojects"
                 isNewer = true
                 // Should be replaced to jarFilename jar
@@ -272,7 +294,7 @@ class GenerateTask extends BaseTask {
                     def projectLibDir = pp.file('libs')
                     if (isAarDependency) {
                         projectLibDir.listFiles().findAll {
-                            it.isDirectory() && getDependencyName(it.name) == dependencyName
+                            it.isDirectory() && getDependencyName(it) == dependencyName
                         }.each { File lib ->
                             println "  REMOVED ${lib}"
                             pp.delete(lib)
@@ -285,7 +307,7 @@ class GenerateTask extends BaseTask {
                         }
                     } else {
                         projectLibDir.listFiles().findAll {
-                            !it.isDirectory() && getDependencyName(it.name) == dependencyName
+                            !it.isDirectory() && getDependencyName(it) == dependencyName
                         }.each { File lib ->
                             println "  REMOVED ${lib}"
                             pp.delete(lib)
@@ -299,6 +321,12 @@ class GenerateTask extends BaseTask {
             println "  Copy new dependency: ${dependencyFilename}"
             copyClosure(libsDir)
         }
+    }
+
+    static boolean versionIsNewerThan(String v1, String v2) {
+        def cv1 = new ComparableVersion(v1)
+        def cv2 = new ComparableVersion(v2)
+        return cv2.compareTo(cv1) < 0
     }
 
     void generateProjectPropertiesFile(Project p, AndroidDependency dependency) {
