@@ -141,8 +141,8 @@ class GenerateTask extends BaseTask {
         "${dependency.moduleGroup}:${dependency.moduleName}:${dependency.moduleVersion}"
     }
 
-    static Collection<Configuration> androidConfigurations(Project p) {
-        [p.configurations.compile, p.configurations.debugCompile]
+    Collection<Configuration> androidConfigurations(Project p) {
+        extension.targetConfigurations.collect { p.configurations.getByName(it) }
     }
 
     static String getBaseName(String filename) {

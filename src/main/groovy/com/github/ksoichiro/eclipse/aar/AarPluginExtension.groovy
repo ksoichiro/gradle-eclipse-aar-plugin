@@ -9,6 +9,7 @@ class AarPluginExtension {
     String projectNamePrefix = ''
     boolean cleanLibsDirectoryEnabled = true
     String projectName
+    List<String> targetConfigurations = ['compile', 'debugCompile']
 
     AarPluginExtension(Project project) {
         this.project = project
