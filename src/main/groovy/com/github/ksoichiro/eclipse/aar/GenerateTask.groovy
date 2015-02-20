@@ -149,6 +149,29 @@ class GenerateTask extends BaseTask {
         filename.lastIndexOf('.').with { it != -1 ? filename[0..<it] : filename }
     }
 
+    String getDependencyGroup(File file) {
+        // '-' is not always the separator of version, version itself often has '-'.
+        // So we should find version from resolved dependencies.
+        // Path: .../modules-2/files-2.1/group/artifact/version/hash/artifact-version.ext
+        def baseFilename = getBaseName(file.name)
+        String target = file.path.tr(System.getProperty('file.separator'), '-')
+        String group = null
+        allConfigurationsDependencies.each { k, v ->
+            if ("${v.moduleName}-${v.moduleVersion}" == baseFilename) {
+                // This may be the dependency of the file
+                // Find group from file path and check qualified name matches
+                if (target ==~ /.*-${v.moduleGroup}-${v.moduleName}-${v.moduleVersion}-.*/) {
+                    // This is the one
+                    group = v.moduleGroup
+                }
+            }
+        }
+        if (!group) {
+            println "ERROR: Could not find group: ${target}"
+        }
+        return group
+    }
+
     String getDependencyName(File file) {
         // '-' is not always the separator of version, version itself often has '-'.
         // So we should find version from resolved dependencies.
@@ -205,9 +228,12 @@ class GenerateTask extends BaseTask {
 
         Set<AndroidDependency> latestDependencies = []
         projectDependencies.each { AndroidDependency dependency ->
+            def dependencyGroup = getDependencyGroup(dependency.file)
             def dependencyName = getDependencyName(dependency.file)
             String latestJarVersion = "0"
-            def duplicateDependencies = allDependencies.findAll { it.file.name.startsWith(dependencyName) }
+            def duplicateDependencies = allDependencies.findAll {
+                getDependencyGroup(it.file) == dependencyGroup && getDependencyName(it.file) == dependencyName
+            }
             AndroidDependency latestDependency
             if (1 < duplicateDependencies.size()) {
                 duplicateDependencies.each {

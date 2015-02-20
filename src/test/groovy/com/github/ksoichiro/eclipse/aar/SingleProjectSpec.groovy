@@ -2,8 +2,11 @@ package com.github.ksoichiro.eclipse.aar
 
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.testfixtures.ProjectBuilder
+
+import java.util.regex.Matcher
 
 class SingleProjectSpec extends BaseSpec {
 
@@ -147,5 +150,77 @@ android.library.reference.3=aarDependencies/com.github.ksoichiro-android-observa
 android.library.reference.4=aarDependencies/com.android.support-support-v4-21.0.2
 android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-21.0.0
 """
+    }
+
+    def "Duplicate dependency names"() {
+        setup:
+        Project project = setupProject([
+                'com.github.chrisbanes.photoview:library:1.2.3',
+                'com.github.amlcurran.showcaseview:library:5.0.0',
+        ])
+        List<String> resolvedJars = [
+                'com.android.support-support-v4-19.1.0.jar',
+                'com.github.chrisbanes.photoview-library-1.2.3.jar',
+                'com.github.amlcurran.showcaseview-library-5.0.0.jar',
+        ]
+        List<String> resolvedAars = [
+                'com.github.chrisbanes.photoview-library-1.2.3',
+                'com.github.amlcurran.showcaseview-library-5.0.0',
+        ]
+
+        when:
+        project.tasks.generateEclipseDependencies.execute()
+        List<String> jarNames = jarEntriesFromClasspathFiles(project)
+        List<String> aarNames = aarEntriesFromProjectProperties(project)
+
+        then:
+        jarNames.find { !(it in resolvedJars) } == null
+        aarNames.find { !(it in resolvedAars) } == null
+    }
+
+    Project setupProject(List<String> libs) {
+        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
+        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', 'project.properties'].each {
+            if (project.file(it).exists()) {
+                project.delete(it)
+            }
+        }
+        project.plugins.apply AppPlugin
+        project.plugins.apply PLUGIN_ID
+        project.repositories { RepositoryHandler it ->
+            it.mavenCentral()
+            it.maven {
+                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
+            }
+        }
+        project.dependencies { DependencyHandler dh ->
+            libs.each {
+                dh.add('compile', it)
+            }
+        }
+        project
+    }
+
+    List<String> jarEntriesFromClasspathFiles(Project project) {
+        File classpathFile = project.file('.classpath')
+        def classPaths = new XmlSlurper().parseText(classpathFile.text)
+        def libClassPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'lib' }
+        libClassPathEntries.collect { it.@path.text().replaceFirst('^libs/', '') }
+    }
+
+    List<String> aarEntriesFromProjectProperties(Project project) {
+        File projectPropertiesFile = project.file('project.properties')
+        Properties props = new Properties()
+        projectPropertiesFile.withInputStream { stream -> props.load(stream) }
+        List<String> aarNames = []
+        props.propertyNames().findAll {
+            it =~ /^android\.library\.reference\.[0-9]+/
+        }.each {
+            Matcher mValue = props[it] =~ /^${project.extensions.eclipseAar.aarDependenciesDir}\\/(.*)/
+            if (mValue.matches()) {
+                aarNames << mValue[0][1]
+            }
+        }
+        aarNames
     }
 }
