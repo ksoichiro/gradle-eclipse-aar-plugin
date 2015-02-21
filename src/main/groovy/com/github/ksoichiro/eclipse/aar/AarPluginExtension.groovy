@@ -7,7 +7,7 @@ class AarPluginExtension {
     String androidTarget = 'android-21'
     String aarDependenciesDir = 'aarDependencies'
     String projectNamePrefix = ''
-    boolean cleanLibsDirectoryEnabled = true
+    boolean cleanLibsDirectoryEnabled = false
     String projectName
     List<String> targetConfigurations = ['compile', 'debugCompile']
 

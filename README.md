@@ -144,7 +144,7 @@ Configurations for this plugin are written in `eclipseAar` closure.
 | aarDependenciesDir | `aarDependencies` | Directory to explode AARs |
 | projectNamePrefix | (Empty) | Project name prefix for AAR dependencies |
 | projectName | (Target project name) | Base project name for AAR dependencies |
-| cleanLibsDirectoryEnabled | `true` | Set to `false` if you don't want `libs` directory to be deleted. |
+| cleanLibsDirectoryEnabled | `false` | Set to `true` if you want `libs` directory to be cleaned before files are generated. |
 | targetConfigurations | `['compile', 'debugCompile']` | Configurations that dependency JAR/AAR will be aggregated from |
 
 ## License

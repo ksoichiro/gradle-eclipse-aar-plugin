@@ -29,6 +29,7 @@ eclipseAar {
     androidTarget = 'android-21'
     aarDependenciesDir = 'aarDependencies'
     projectName = 'RenamedProject'
+    cleanLibsDirectoryEnabled = true
 }
 
 android {

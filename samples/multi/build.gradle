@@ -20,6 +20,7 @@ repositories {
 eclipseAar {
     androidTarget = 'android-21'
     aarDependenciesDir = 'aarDependencies'
+    cleanLibsDirectoryEnabled = true
 }
 
 project(':library') {
