@@ -25,8 +25,8 @@ class SingleProjectSpec extends BaseSpec {
 
     def "normalProject"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', 'project.properties'].each {
+        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
+        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', '.project', 'project.properties'].each {
             if (project.file(it).exists()) {
                 project.delete(it)
             }
@@ -50,6 +50,7 @@ class SingleProjectSpec extends BaseSpec {
         when:
         project.tasks.generateEclipseDependencies.execute()
         File classpathFile = project.file('.classpath')
+        File projectFile = project.file('.project')
         File projectPropertiesFile = project.file('project.properties')
 
         then:
@@ -70,6 +71,41 @@ class SingleProjectSpec extends BaseSpec {
 \t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
 \t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
 </classpath>
+"""
+        projectFile.exists()
+        projectFile.text == """<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+\t<name>${project.name}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t</natures>
+</projectDescription>
 """
         projectPropertiesFile.exists()
         projectPropertiesFile.text == """target=android-21
@@ -114,6 +150,41 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 \t<classpathentry kind="lib" path="libs/com.nineoldandroids-library-2.4.0.jar"/>
 </classpath>
 """
+        File projectFile = project.file('.project')
+        projectFile.text = """<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+\t<name>${project.name}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t</natures>
+</projectDescription>
+"""
         File projectPropertiesFile = project.file('project.properties')
         projectPropertiesFile.text = """\
 target=android-21
@@ -141,6 +212,41 @@ android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.
 \t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
 \t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
 </classpath>
+"""
+        projectFile.exists()
+        projectFile.text == """<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+\t<name>${project.name}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t</natures>
+</projectDescription>
 """
         projectPropertiesFile.exists()
         projectPropertiesFile.text == """target=android-21

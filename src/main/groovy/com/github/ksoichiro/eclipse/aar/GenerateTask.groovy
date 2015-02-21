@@ -133,6 +133,7 @@ class GenerateTask extends BaseTask {
                 generateEclipseProjectFile(p, d)
             }
             generateEclipseClasspathFileForParent(p)
+            generateEclipseProjectFileForParent(p)
             generateProjectPropertiesFileForParent(p)
         }
     }
@@ -408,7 +409,6 @@ android.library=true
 \t\t</buildCommand>
 \t</buildSpec>
 \t<natures>
-\t\t<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
 \t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 \t</natures>
@@ -475,6 +475,48 @@ android.library=true
             lines += "</classpath>${System.getProperty('line.separator')}"
             classpathFile.text = lines.join(System.getProperty('line.separator'))
         }
+    }
+
+    void generateEclipseProjectFileForParent(Project p) {
+        def file = p.file(".project")
+        if (file.exists()) {
+            return
+        }
+        file.text = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+\t<name>${p.name}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t</natures>
+</projectDescription>
+"""
     }
 
     void generateProjectPropertiesFileForParent(Project p) {

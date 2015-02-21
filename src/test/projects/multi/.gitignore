@@ -3,4 +3,5 @@ aarDependencies/
 libs/
 userHome/
 .classpath
+.project
 project.properties
