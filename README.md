@@ -17,10 +17,14 @@ You can manage dependencies with Gradle and build app on Eclipse.
 
 ### Prepare build.gradle
 
+If your project already uses Gradle and Android Studio,
+just apply this plugin and configure it in `eclipseAar` closure.
+
 ```groovy
 buildscript {
     repositories {
         mavenCentral()
+        // This plugin is currently distributed as SNAPSHOT.
         maven {
             url uri('https://oss.sonatype.org/content/repositories/snapshots/')
         }
@@ -32,12 +36,15 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
+
+// Apply this plugin
 apply plugin: 'com.github.ksoichiro.eclipse.aar'
 
 repositories {
     mavenCentral()
 }
 
+// Write your dependencies
 dependencies {
     compile 'com.android.support:appcompat-v7:21.0.2'
     compile 'com.nineoldandroids:library:2.4.0'
@@ -45,8 +52,9 @@ dependencies {
     compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
 }
 
-// Configure plugin
+// Configure eclipse-aar plugin
 eclipseAar {
+    // See "Configurations" for details
     androidTarget = 'android-21'
     aarDependenciesDir = 'aarDependencies'
 }
@@ -120,17 +128,22 @@ If you don't have `.classpath` file, this plugin will create it.
 If you have `.classpath` file but don't have `<classpathentry>`s for the required libraries in it, this plugin will add these entries, too.  
 Therefore you don't have to care about them.
 
+### .project files?
+
+Eclipse has `.project` files to manage project description.  
+If you don't have `.project` file, this plugin will create it, so you don't have to care about them.
+
 ## Configurations
 
 Configurations for this plugin are written in `eclipseAar` closure.
 
 | Configuration | Default | Description |
 | ------------- | ------- | ----------- |
-| androidTarget | 'android-21' | `target` value in dependency projects' project.properties |
-| aarDependenciesDir | 'aarDependencies' | Directory to explode AARs |
+| androidTarget | `android-21` | `target` value in dependency projects' project.properties |
+| aarDependenciesDir | `aarDependencies` | Directory to explode AARs |
 | projectNamePrefix | (Empty) | Project name prefix for AAR dependencies |
 | projectName | (Target project name) | Base project name for AAR dependencies |
-| cleanLibsDirectoryEnabled | true | Set to `false` if you don't want `libs` directory to be deleted. |
+| cleanLibsDirectoryEnabled | `true` | Set to `false` if you don't want `libs` directory to be deleted. |
 | targetConfigurations | `['compile', 'debugCompile']` | Configurations that dependency JAR/AAR will be aggregated from |
 
 ## License
