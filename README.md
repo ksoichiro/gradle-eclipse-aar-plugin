@@ -3,9 +3,10 @@
 [![Build Status](http://img.shields.io/travis/ksoichiro/gradle-eclipse-aar-plugin.svg?style=flat&branch=master)](https://travis-ci.org/ksoichiro/gradle-eclipse-aar-plugin)
 [![Coverage Status](https://coveralls.io/repos/ksoichiro/gradle-eclipse-aar-plugin/badge.svg?branch=master)](https://coveralls.io/r/ksoichiro/gradle-eclipse-aar-plugin?branch=master)
 
-Gradle plugin to use Android AAR libraries on Eclipse.
-
+Gradle plugin to use Android AAR libraries on Eclipse.  
 You can manage dependencies with Gradle and build app on Eclipse.
+
+![How it works](image.png)
 
 ## Prerequisites
 
