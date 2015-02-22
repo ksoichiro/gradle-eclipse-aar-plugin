@@ -48,21 +48,9 @@ class GenerateTask extends BaseTask {
         }
         projects.each { Project p ->
             androidConfigurations(p).each { Configuration configuration ->
-                println "Aggregating JAR dependencies for project ${p.name} from ${configuration.name} configuration"
-                configuration.filter {
-                    it.name.endsWith 'jar'
-                }.each { File jar ->
-                    if (!fileDependencies[p]) {
-                        fileDependencies[p] = [] as Set<AndroidDependency>
-                    }
-                    fileDependencies[p] << getDependencyFromFile(jar)
-                }
-
-                println "Aggregating AAR dependencies for project ${p.name} from ${configuration.name} configuration"
-                configuration.filter { File aar ->
-                    aar.name.endsWith('aar')
-                }.each { File aar ->
-                    def convertedPath = aar.path.tr(System.getProperty('file.separator'), '.')
+                println "Classifying dependencies for project ${p.name} from ${configuration.name} configuration"
+                configuration.each { File file ->
+                    def convertedPath = file.path.tr(System.getProperty('file.separator'), '.')
                     def convertedPathExtStripped = convertedPath.lastIndexOf('.').with {
                         it != -1 ? convertedPath[0..<it] : convertedPath
                     }
@@ -83,7 +71,7 @@ class GenerateTask extends BaseTask {
                         if (!fileDependencies[p]) {
                             fileDependencies[p] = [] as Set<AndroidDependency>
                         }
-                        fileDependencies[p] << getDependencyFromFile(aar)
+                        fileDependencies[p] << getDependencyFromFile(file)
                     }
                 }
             }
