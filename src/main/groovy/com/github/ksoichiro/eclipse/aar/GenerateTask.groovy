@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.ResolvedDependency
+import org.gradle.api.file.CopySpec
 import org.gradle.api.tasks.TaskAction
 import org.gradle.mvn3.org.apache.maven.artifact.versioning.ComparableVersion
 
@@ -192,24 +193,24 @@ class GenerateTask extends BaseTask {
         boolean sameDependencyExists = false
         def dependencies = isAarDependency ? aarDependencies[p] : jarDependencies[p]
         def copyClosure = isAarDependency ? { destDir ->
-            p.copy {
-                from p.zipTree(dependency.file)
-                exclude 'classes.jar'
-                into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+            p.copy { CopySpec it ->
+                it.from p.zipTree(dependency.file)
+                it.exclude 'classes.jar'
+                it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
             }
-            p.copy {
-                from p.zipTree(dependency.file)
-                include 'classes.jar'
-                into destDir
-                rename { String fileName ->
+            p.copy { CopySpec it ->
+                it.from p.zipTree(dependency.file)
+                it.include 'classes.jar'
+                it.into destDir
+                it.rename { String fileName ->
                     fileName.replace('classes.jar', "${dependencyProjectName}.jar")
                 }
             }
         } : { destDir ->
-            p.copy {
-                from dependency.file
-                into destDir
-                rename { "${dependencyProjectName}.jar" }
+            p.copy { CopySpec it ->
+                it.from dependency.file
+                it.into destDir
+                it.rename { "${dependencyProjectName}.jar" }
             }
         }
         dependencies.findAll { AndroidDependency it ->
@@ -231,10 +232,10 @@ class GenerateTask extends BaseTask {
                         }.each { File lib ->
                             println "  REMOVED ${lib}"
                             pp.delete(lib)
-                            pp.copy {
-                                from pp.zipTree(dependency.file)
-                                exclude 'classes.jar'
-                                into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+                            pp.copy { CopySpec it ->
+                                it.from pp.zipTree(dependency.file)
+                                it.exclude 'classes.jar'
+                                it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
                             }
                             copyClosure(projectLibDir)
                         }
@@ -254,10 +255,10 @@ class GenerateTask extends BaseTask {
             println "Adding dependency: ${dependency.file.path}"
             copyClosure('libs')
             if (isAarDependency) {
-                p.copy {
-                    from p.zipTree(dependency.file)
-                    exclude 'classes.jar'
-                    into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+                p.copy { CopySpec it ->
+                    it.from p.zipTree(dependency.file)
+                    it.exclude 'classes.jar'
+                    it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
                 }
                 copyClosure("${extension.aarDependenciesDir}/${dependencyProjectName}/libs")
             }
