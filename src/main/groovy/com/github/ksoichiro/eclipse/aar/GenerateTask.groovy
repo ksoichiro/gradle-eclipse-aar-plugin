@@ -118,8 +118,8 @@ class GenerateTask extends BaseTask {
         }
 
         def extractDependenciesFrom = { Project p ->
-            jarDependencies[p].each { AndroidDependency d -> moveJarIntoLibs(p, d) }
-            aarDependencies[p].each { AndroidDependency d -> moveAndRenameAar(p, d) }
+            jarDependencies[p].each { AndroidDependency d -> copyJarIfNewer(p, d, false) }
+            aarDependencies[p].each { AndroidDependency d -> copyJarIfNewer(p, d, true) }
         }
 
         projects.each {
@@ -255,29 +255,10 @@ class GenerateTask extends BaseTask {
         latestDependencies
     }
 
-    void moveJarIntoLibs(Project p, AndroidDependency dependency) {
-        println "Added jar ${dependency.file}"
-        copyJarIfNewer(p, 'libs', dependency, false)
-    }
-
-    void moveAndRenameAar(Project p, AndroidDependency dependency) {
-        println "Added aar ${dependency.file}"
-        def dependencyProjectName = dependency.getQualifiedName()
-
-        p.copy {
-            from p.zipTree(dependency.file)
-            exclude 'classes.jar'
-            into "${extension.aarDependenciesDir}/${dependencyProjectName}"
-        }
-
-        ["${extension.aarDependenciesDir}/${dependencyProjectName}/libs", "libs"].each { dest ->
-            copyJarIfNewer(p, dest, dependency, true)
-        }
-    }
-
-    void copyJarIfNewer(Project p, String libsDir, AndroidDependency dependency, boolean isAarDependency) {
+    void copyJarIfNewer(Project p, AndroidDependency dependency, boolean isAarDependency) {
         def dependencyFilename = dependency.file.name
         def dependencyProjectName = dependency.getQualifiedName()
+        def dependencyGroup = getDependencyGroup(dependency.file)
         def dependencyName = getDependencyName(dependency.file)
         def versionName = getVersionName(dependency.file)
         boolean isNewer = false
@@ -305,8 +286,10 @@ class GenerateTask extends BaseTask {
             }
         }
         dependencies.findAll { AndroidDependency it ->
-            // Check if there are any dependencies with the same name but different version
-            getDependencyName(it.file) == dependencyName && getVersionName(it.file) != versionName
+            // Check if there are any dependencies with the same group and name but different version
+            getDependencyGroup(it.file) == dependencyGroup &&
+                    getDependencyName(it.file) == dependencyName &&
+                    getVersionName(it.file) != versionName
         }.each { AndroidDependency androidDependency ->
             println "  Same dependency exists: ${dependencyFilename}, ${androidDependency.file.name}"
             sameDependencyExists = true
@@ -345,8 +328,16 @@ class GenerateTask extends BaseTask {
             }
         }
         if (!sameDependencyExists || isNewer) {
-            println "  Copy new dependency: ${dependencyFilename}"
-            copyClosure(libsDir)
+            println "Adding dependency: ${dependency.file.path}"
+            copyClosure('libs')
+            if (isAarDependency) {
+                p.copy {
+                    from p.zipTree(dependency.file)
+                    exclude 'classes.jar'
+                    into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+                }
+                copyClosure("${extension.aarDependenciesDir}/${dependencyProjectName}/libs")
+            }
         }
     }
 
