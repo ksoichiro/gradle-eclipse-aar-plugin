@@ -24,10 +24,10 @@ class AndroidDependency {
     }
 
     boolean isSameArtifact(AndroidDependency dependency) {
-        group == dependency.group && name == dependency.name
+        artifactType == dependency.artifactType && group == dependency.group && name == dependency.name
     }
 
     boolean isSameArtifactVersion(AndroidDependency dependency) {
-        group == dependency.group && name == dependency.name && version == dependency.version
+        isSameArtifact(dependency) && version == dependency.version
     }
 }
