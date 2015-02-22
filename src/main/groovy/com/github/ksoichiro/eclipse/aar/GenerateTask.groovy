@@ -418,8 +418,17 @@ android.library=true
 
     void generateEclipseClasspathFileForParent(Project p) {
         // Use srcDirs definition for classpath entry
-        def androidSrcDirs = p.android?.sourceSets?.main?.java?.srcDirs
-        if (!androidSrcDirs) {
+        def androidSrcDirs = []
+        p.android?.sourceSets?.findAll { it.name in ['main', 'debug'] }?.each {
+            if (it.java?.srcDirs) {
+                it.java.srcDirs.each { srcDir ->
+                    if (srcDir.exists()) {
+                        androidSrcDirs << srcDir
+                    }
+                }
+            }
+        }
+        if (0 == androidSrcDirs.size()) {
             androidSrcDirs = ['src/main/java']
         }
         if (!androidSrcDirs.contains('gen')) {
