@@ -1,6 +1,9 @@
 aarDependencies/
 .gradle/
 libs/
+bin/
+gen/
 userHome/
 .classpath
+.project
 project.properties
