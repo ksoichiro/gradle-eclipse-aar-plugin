@@ -36,10 +36,11 @@ class CleanSpec extends BaseSpec {
         project.tasks.cleanEclipseDependencies.execute()
 
         then:
-        libsDirs.any { !it.exists() }
+        !project.file('aarDependencies').exists()
+        project.file('libs').exists()
     }
 
-    def "cleaning libs directory is disabled"() {
+    def "cleaning libs directory is enabled"() {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/clean")).build()
         ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath'].each {
@@ -64,13 +65,13 @@ class CleanSpec extends BaseSpec {
             compile 'com.melnykov:floatingactionbutton:1.0.7'
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
-        project.extensions.eclipseAar.cleanLibsDirectoryEnabled = false
+        project.extensions.eclipseAar.cleanLibsDirectoryEnabled = true
 
         when:
         project.tasks.cleanEclipseDependencies.execute()
 
         then:
         !project.file('aarDependencies').exists()
-        project.file('libs').exists()
+        !project.file('libs').exists()
     }
 }
