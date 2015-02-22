@@ -109,6 +109,7 @@ class MulitiProjectSpec extends BaseSpec {
         projectPropertiesLibraryFile.exists()
         projectPropertiesAppFile.exists()
         projectPropertiesLibraryFile.text == """target=android-21
+android.library=true
 android.library.reference.1=aarDependencies/com.android.support-recyclerview-v7-21.0.0
 android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
 """

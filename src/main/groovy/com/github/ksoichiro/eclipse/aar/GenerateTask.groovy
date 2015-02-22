@@ -524,9 +524,14 @@ android.library=true
         List<String> libNames = []
         List<String> projectNames = []
         int maxReference = 0
+        boolean shouldAddLibrary = false
+        if (p.plugins.hasPlugin('com.android.library')) {
+            shouldAddLibrary = true
+        }
         if (projectPropertiesFile.exists()) {
             Properties props = new Properties()
             projectPropertiesFile.withInputStream { stream -> props.load(stream) }
+
             props.propertyNames().findAll {
                 it =~ /^android\.library\.reference\.[0-9]+/
             }.each {
@@ -554,6 +559,9 @@ android.library=true
                     }
                 }
             }
+            if (shouldAddLibrary && props.hasProperty('android.library')) {
+                shouldAddLibrary = false
+            }
         } else {
             // Create minimum properties file
             projectPropertiesFile.text = """\
@@ -562,6 +570,10 @@ target=${extension.androidTarget}
         }
 
         def entriesToAdd = []
+        if (shouldAddLibrary) {
+            entriesToAdd << 'android.library=true'
+        }
+
         List<String> list = projectDependencies[p]?.collect { it.getQualifiedName().replaceFirst('^:', '') }
         list = list?.findAll { projectNames.find { prj -> prj == it } == null }
         list?.each {
@@ -575,6 +587,7 @@ target=${extension.androidTarget}
             maxReference++
             entriesToAdd << "android.library.reference.${maxReference}=${extension.aarDependenciesDir}/${it}"
         }
+
         if (0 < entriesToAdd.size()) {
             def content = projectPropertiesFile.text
             if (!content.endsWith(System.getProperty('line.separator'))) {
