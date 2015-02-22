@@ -470,7 +470,7 @@ android.library=true
                     }
                 }
             }
-            if (shouldAddLibrary && props.hasProperty('android.library')) {
+            if (shouldAddLibrary && props.containsKey('android.library')) {
                 shouldAddLibrary = false
             }
         } else {
