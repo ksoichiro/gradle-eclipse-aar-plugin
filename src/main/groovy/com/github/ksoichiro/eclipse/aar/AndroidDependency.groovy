@@ -22,4 +22,12 @@ class AndroidDependency {
     boolean isProject() {
         artifactType == AndroidArtifactType.PROJECT
     }
+
+    boolean isSameArtifact(AndroidDependency dependency) {
+        group == dependency.group && name == dependency.name
+    }
+
+    boolean isSameArtifactVersion(AndroidDependency dependency) {
+        group == dependency.group && name == dependency.name && version == dependency.version
+    }
 }
