@@ -44,7 +44,10 @@ class GenerateTask extends BaseTask {
             androidConfigurations(p).each { Configuration configuration ->
                 println "Aggregating resolved dependencies for project ${p.name} from ${configuration.name} configuration"
                 aggregateResolvedDependencies(configuration.resolvedConfiguration.firstLevelModuleDependencies, "  ")
-
+            }
+        }
+        projects.each { Project p ->
+            androidConfigurations(p).each { Configuration configuration ->
                 println "Aggregating JAR dependencies for project ${p.name} from ${configuration.name} configuration"
                 configuration.filter {
                     it.name.endsWith 'jar'
