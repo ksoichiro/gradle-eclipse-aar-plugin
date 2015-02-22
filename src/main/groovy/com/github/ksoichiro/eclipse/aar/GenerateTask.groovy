@@ -89,31 +89,11 @@ class GenerateTask extends BaseTask {
         projects.each { Project p ->
             jarDependencies[p] = getLatestDependencies(jarDependencies, jarDependencies[p])
             aarDependencies[p] = getLatestDependencies(aarDependencies, aarDependencies[p])
-
-            (jarDependencies[p] + aarDependencies[p]).each { AndroidDependency d ->
-                String convertedPath = d.file.path.tr(System.getProperty('file.separator'), '.')
-                ResolvedDependency matchedDependency = allConfigurationsDependencies.find { k, v ->
-                    convertedPath.contains("${v.moduleGroup}.${v.moduleName}") && v.moduleVersion == d.version
-                }?.value
-                if (matchedDependency) {
-                    d.with {
-                        group = matchedDependency.moduleGroup
-                        name = matchedDependency.moduleName
-                        version = matchedDependency.moduleVersion
-                    }
-                } else {
-                    println "WARNING: matching dependency not found for ${d.file}"
-                }
-            }
         }
 
-        def extractDependenciesFrom = { Project p ->
+        projects.each { Project p ->
             jarDependencies[p].each { AndroidDependency d -> copyJarIfNewer(p, d, false) }
             aarDependencies[p].each { AndroidDependency d -> copyJarIfNewer(p, d, true) }
-        }
-
-        projects.each {
-            extractDependenciesFrom it
         }
 
         projects.each { Project p ->
