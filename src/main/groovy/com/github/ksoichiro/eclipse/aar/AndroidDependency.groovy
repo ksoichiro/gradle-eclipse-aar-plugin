@@ -11,12 +11,22 @@ class AndroidDependency {
 
     String getQualifiedName() {
         if (isProject()) {
-            return name;
+            return name
         }
         if (!group && !name && !version) {
-            return file.name;
+            return file?.name ?: ""
         }
-        [group ?: "", name ?: "", version ?: ""].join(SEPARATOR)
+        def list = []
+        if (group && !group.isEmpty()) {
+            list << group
+        }
+        if (name && !name.isEmpty()) {
+            list << name
+        }
+        if (version && !version.isEmpty()) {
+            list << version
+        }
+        list.join(SEPARATOR)
     }
 
     boolean isProject() {
@@ -24,7 +34,7 @@ class AndroidDependency {
     }
 
     boolean isSameArtifact(AndroidDependency dependency) {
-        artifactType == dependency.artifactType && group == dependency.group && name == dependency.name
+        dependency && artifactType == dependency.artifactType && group == dependency.group && name == dependency.name
     }
 
     boolean isSameArtifactVersion(AndroidDependency dependency) {
