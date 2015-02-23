@@ -176,10 +176,7 @@ class GenerateTask extends BaseTask {
     }
 
     void copyJarIfNewer(Project p, AndroidDependency dependency) {
-        def dependencyFilename = dependency.file.name
         def dependencyProjectName = dependency.getQualifiedName()
-        boolean isNewer = false
-        boolean sameDependencyExists = false
         boolean isAarDependency = dependency.artifactType == AndroidArtifactType.AAR
         def copyClosure = isAarDependency ? { destDir ->
             p.copy { CopySpec it ->
@@ -202,55 +199,15 @@ class GenerateTask extends BaseTask {
                 it.rename { "${dependencyProjectName}.jar" }
             }
         }
-        fileDependencies[p].findAll { AndroidDependency it ->
-            // Check if there are any dependencies with the same group and name but different version
-            dependency.isSameArtifact(it) && it.version != dependency.version
-        }.each { AndroidDependency androidDependency ->
-            println "  Same dependency exists: ${dependencyFilename}, ${androidDependency.file.name}"
-            sameDependencyExists = true
-            // 'androidDependency.file' may be removed in previous loop
-            if (androidDependency.file.exists() && versionIsNewerThan(dependency.version, androidDependency.version)) {
-                println "  Found older dependency. Copy ${dependencyFilename} to all subprojects"
-                isNewer = true
-                // Should be replaced to jarFilename jar
-                projects.each { Project pp ->
-                    def projectLibDir = pp.file('libs')
-                    if (isAarDependency) {
-                        projectLibDir.listFiles().findAll {
-                            it.isDirectory() && dependency.isSameArtifactVersion(getDependencyFromFile(it))
-                        }.each { File lib ->
-                            println "  REMOVED ${lib}"
-                            pp.delete(lib)
-                            pp.copy { CopySpec it ->
-                                it.from pp.zipTree(dependency.file)
-                                it.exclude 'classes.jar'
-                                it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
-                            }
-                            copyClosure(projectLibDir)
-                        }
-                    } else {
-                        projectLibDir.listFiles().findAll {
-                            !it.isDirectory() && dependency.isSameArtifactVersion(getDependencyFromFile(it))
-                        }.each { File lib ->
-                            println "  REMOVED ${lib}"
-                            pp.delete(lib)
-                            copyClosure(projectLibDir)
-                        }
-                    }
-                }
+        println "Adding dependency: ${dependency.file.path}"
+        copyClosure('libs')
+        if (isAarDependency) {
+            p.copy { CopySpec it ->
+                it.from p.zipTree(dependency.file)
+                it.exclude 'classes.jar'
+                it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
             }
-        }
-        if (!sameDependencyExists || isNewer) {
-            println "Adding dependency: ${dependency.file.path}"
-            copyClosure('libs')
-            if (isAarDependency) {
-                p.copy { CopySpec it ->
-                    it.from p.zipTree(dependency.file)
-                    it.exclude 'classes.jar'
-                    it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
-                }
-                copyClosure("${extension.aarDependenciesDir}/${dependencyProjectName}/libs")
-            }
+            copyClosure("${extension.aarDependenciesDir}/${dependencyProjectName}/libs")
         }
     }
 
