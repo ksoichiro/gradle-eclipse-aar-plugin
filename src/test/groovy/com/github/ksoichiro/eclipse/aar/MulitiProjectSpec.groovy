@@ -142,11 +142,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
                 .build()
 
         project.subprojects.each { Project p ->
-            ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', '.project', 'project.properties'].each {
-                if (p.file(it).exists()) {
-                    p.delete(it)
-                }
-            }
+            deleteOutputs(p)
         }
 
         project.subprojects*.repositories { RepositoryHandler it ->
@@ -272,11 +268,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
                 .build()
 
         project.subprojects.each { Project p ->
-            ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', '.project', 'project.properties'].each {
-                if (p.file(it).exists()) {
-                    p.delete(it)
-                }
-            }
+            deleteOutputs(p)
         }
 
         project.subprojects*.repositories { RepositoryHandler it ->

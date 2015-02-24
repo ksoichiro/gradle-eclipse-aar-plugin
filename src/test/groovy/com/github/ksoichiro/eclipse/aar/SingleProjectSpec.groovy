@@ -26,11 +26,7 @@ class SingleProjectSpec extends BaseSpec {
     def "normalProject"() {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', '.project', 'project.properties'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         project.repositories { RepositoryHandler it ->
@@ -120,11 +116,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
     def "metaFilesExists"() {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         project.repositories { RepositoryHandler it ->
@@ -317,11 +309,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 
     Project setupProject(List<String> libs) {
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', 'project.properties'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         project.repositories { RepositoryHandler it ->
