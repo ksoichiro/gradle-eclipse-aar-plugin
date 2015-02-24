@@ -24,18 +24,8 @@ class MulitiProjectSpec extends BaseSpec {
                 .build()
 
         project.subprojects.each { Project p ->
-            ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', '.project', 'project.properties'].each {
-                if (p.file(it).exists()) {
-                    p.delete(it)
-                }
-            }
-        }
-
-        project.subprojects*.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
+            deleteOutputs(p)
+            setupRepositories(p)
         }
 
         projectLibrary.plugins.apply LibraryPlugin
@@ -143,13 +133,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 
         project.subprojects.each { Project p ->
             deleteOutputs(p)
-        }
-
-        project.subprojects*.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
+            setupRepositories(p)
         }
 
         projectLibrary.plugins.apply LibraryPlugin
@@ -269,13 +253,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 
         project.subprojects.each { Project p ->
             deleteOutputs(p)
-        }
-
-        project.subprojects*.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
+            setupRepositories(p)
         }
 
         projectLibrary.plugins.apply LibraryPlugin

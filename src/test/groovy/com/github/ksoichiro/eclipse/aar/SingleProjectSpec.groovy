@@ -29,12 +29,7 @@ class SingleProjectSpec extends BaseSpec {
         deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
-        project.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
-        }
+        setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
             compile 'com.nineoldandroids:library:2.4.0'
@@ -119,12 +114,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
-        project.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
-        }
+        setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
             compile 'com.nineoldandroids:library:2.4.0'
