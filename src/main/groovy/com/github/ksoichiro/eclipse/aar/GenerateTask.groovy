@@ -1,6 +1,5 @@
 package com.github.ksoichiro.eclipse.aar
 
-import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.ResolvedDependency
@@ -11,8 +10,8 @@ import org.gradle.mvn3.org.apache.maven.artifact.versioning.ComparableVersion
 import java.util.regex.Matcher
 
 class GenerateTask extends BaseTask {
-    Map<Project, Set<AndroidDependency>> fileDependencies
-    Map<Project, Set<AndroidDependency>> projectDependencies
+    Map<AndroidProject, Set<AndroidDependency>> fileDependencies
+    Map<AndroidProject, Set<AndroidDependency>> projectDependencies
     Map<String, ResolvedDependency> allConfigurationsDependencies
 
     GenerateTask() {
@@ -40,15 +39,15 @@ class GenerateTask extends BaseTask {
                 }
             }
         }
-        projects.each { Project p ->
+        projects.each { AndroidProject p ->
             androidConfigurations(p).each { Configuration configuration ->
-                println "Aggregating resolved dependencies for project ${p.name} from ${configuration.name} configuration"
+                println "Aggregating resolved dependencies for project ${p.project.name} from ${configuration.name} configuration"
                 aggregateResolvedDependencies(configuration.resolvedConfiguration.firstLevelModuleDependencies, "  ")
             }
         }
-        projects.each { Project p ->
+        projects.each { AndroidProject p ->
             androidConfigurations(p).each { Configuration configuration ->
-                println "Classifying dependencies for project ${p.name} from ${configuration.name} configuration"
+                println "Classifying dependencies for project ${p.project.name} from ${configuration.name} configuration"
                 configuration.each { File file ->
                     def convertedPath = file.path.tr(System.getProperty('file.separator'), '.')
                     def convertedPathExtStripped = convertedPath.lastIndexOf('.').with {
@@ -57,10 +56,10 @@ class GenerateTask extends BaseTask {
                     def localDependency = configuration.dependencies.find { d -> convertedPathExtStripped.endsWith("${d.name}-release") }
                     if (localDependency instanceof ProjectDependency) {
                         // ProjectDependency should be not be exploded, just include in project.properties with relative path
-                        Project dependencyProject = projects.find { it.name == ((ProjectDependency) localDependency).dependencyProject.name }
+                        AndroidProject dependencyProject = projects.find { it.project.name == ((ProjectDependency) localDependency).dependencyProject.name }
                         def d = new AndroidDependency()
                         d.with {
-                            name = dependencyProject.name
+                            name = dependencyProject.project.name
                             artifactType = AndroidArtifactType.PROJECT
                         }
                         if (!projectDependencies[p]) {
@@ -76,15 +75,15 @@ class GenerateTask extends BaseTask {
                 }
             }
         }
-        projects.each { Project p ->
+        projects.each { AndroidProject p ->
             fileDependencies[p] = getLatestDependencies(fileDependencies, fileDependencies[p])
         }
 
-        projects.each { Project p ->
+        projects.each { AndroidProject p ->
             fileDependencies[p].each { AndroidDependency d -> copyJarIfNewer(p, d) }
         }
 
-        projects.each { Project p ->
+        projects.each { AndroidProject p ->
             fileDependencies[p].findAll {
                 it.artifactType == AndroidArtifactType.AAR
             }?.each { AndroidDependency d ->
@@ -102,8 +101,8 @@ class GenerateTask extends BaseTask {
         "${dependency.moduleGroup}:${dependency.moduleName}:${dependency.moduleVersion}"
     }
 
-    Collection<Configuration> androidConfigurations(Project p) {
-        extension.targetConfigurations.collect { p.configurations.getByName(it) }
+    Collection<Configuration> androidConfigurations(AndroidProject p) {
+        extension.targetConfigurations.collect { p.project.configurations.getByName(it) }
     }
 
     static String getBaseName(String filename) {
@@ -140,7 +139,7 @@ class GenerateTask extends BaseTask {
         return dependency
     }
 
-    Set<AndroidDependency> getLatestDependencies(Map<Project, Set<AndroidDependency>> dependencies, Set<AndroidDependency> projectDependencies) {
+    Set<AndroidDependency> getLatestDependencies(Map<AndroidProject, Set<AndroidDependency>> dependencies, Set<AndroidDependency> projectDependencies) {
         Set<AndroidDependency> allDependencies = []
         for (Set<AndroidDependency> d : dependencies.values()) {
             d.each { AndroidDependency dependency ->
@@ -175,17 +174,17 @@ class GenerateTask extends BaseTask {
         latestDependencies
     }
 
-    void copyJarIfNewer(Project p, AndroidDependency dependency) {
+    void copyJarIfNewer(AndroidProject p, AndroidDependency dependency) {
         def dependencyProjectName = dependency.getQualifiedName()
         boolean isAarDependency = dependency.artifactType == AndroidArtifactType.AAR
         def copyClosure = isAarDependency ? { destDir ->
-            p.copy { CopySpec it ->
-                it.from p.zipTree(dependency.file)
+            p.project.copy { CopySpec it ->
+                it.from p.project.zipTree(dependency.file)
                 it.exclude 'classes.jar'
                 it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
             }
-            p.copy { CopySpec it ->
-                it.from p.zipTree(dependency.file)
+            p.project.copy { CopySpec it ->
+                it.from p.project.zipTree(dependency.file)
                 it.include 'classes.jar'
                 it.into destDir
                 it.rename { String fileName ->
@@ -193,7 +192,7 @@ class GenerateTask extends BaseTask {
                 }
             }
         } : { destDir ->
-            p.copy { CopySpec it ->
+            p.project.copy { CopySpec it ->
                 it.from dependency.file
                 it.into destDir
                 it.rename { "${dependencyProjectName}.jar" }
@@ -202,8 +201,8 @@ class GenerateTask extends BaseTask {
         println "Adding dependency: ${dependency.file.path}"
         copyClosure('libs')
         if (isAarDependency) {
-            p.copy { CopySpec it ->
-                it.from p.zipTree(dependency.file)
+            p.project.copy { CopySpec it ->
+                it.from p.project.zipTree(dependency.file)
                 it.exclude 'classes.jar'
                 it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
             }
@@ -217,15 +216,15 @@ class GenerateTask extends BaseTask {
         return cv2.compareTo(cv1) < 0
     }
 
-    void generateProjectPropertiesFile(Project p, AndroidDependency dependency) {
-        p.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/project.properties").text = """\
+    void generateProjectPropertiesFile(AndroidProject p, AndroidDependency dependency) {
+        p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/project.properties").text = """\
 target=${extension.androidTarget}
 android.library=true
 """
     }
 
-    void generateEclipseClasspathFile(Project p, AndroidDependency dependency) {
-        p.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/.classpath").text = """\
+    void generateEclipseClasspathFile(AndroidProject p, AndroidDependency dependency) {
+        p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/.classpath").text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 \t<classpathentry kind="src" path="gen"/>
@@ -237,16 +236,16 @@ android.library=true
 """
     }
 
-    void generateEclipseProjectFile(Project p, AndroidDependency dependency) {
-        def projectName = extension.projectName ?: p.name
+    void generateEclipseProjectFile(AndroidProject p, AndroidDependency dependency) {
+        def projectName = extension.projectName ?: p.project.name
         def name = dependency.getQualifiedName()
-        p.file("${extension.aarDependenciesDir}/${name}/.project").text = projectFileText("${extension.projectNamePrefix}${projectName}-${name}")
+        p.project.file("${extension.aarDependenciesDir}/${name}/.project").text = projectFileText("${extension.projectNamePrefix}${projectName}-${name}")
     }
 
-    void generateEclipseClasspathFileForParent(Project p) {
+    void generateEclipseClasspathFileForParent(AndroidProject p) {
         // Use srcDirs definition for classpath entry
         def androidSrcDirs = []
-        p.android?.sourceSets?.findAll { it.name in ['main', 'debug'] }?.each {
+        p.project.android?.sourceSets?.findAll { it.name in ['main', 'debug'] }?.each {
             if (it.java?.srcDirs) {
                 it.java.srcDirs.each { srcDir ->
                     if (srcDir.exists()) {
@@ -263,9 +262,9 @@ android.library=true
         }
         def androidSrcPaths = []
         androidSrcDirs.each {
-            androidSrcPaths << (it.toString() - p.projectDir.path).replaceFirst("^[/\\\\]", '')
+            androidSrcPaths << (it.toString() - p.project.projectDir.path).replaceFirst("^[/\\\\]", '')
         }
-        def classpathFile = p.file('.classpath')
+        def classpathFile = p.project.file('.classpath')
         List<String> srcPaths = []
         List<String> libNames = []
         if (classpathFile.exists()) {
@@ -311,22 +310,22 @@ android.library=true
         }
     }
 
-    void generateEclipseProjectFileForParent(Project p) {
-        def file = p.file(".project")
+    void generateEclipseProjectFileForParent(AndroidProject p) {
+        def file = p.project.file(".project")
         if (file.exists()) {
             return
         }
-        def projectName = extension.projectName ?: p.name
+        def projectName = extension.projectName ?: p.project.name
         file.text = projectFileText("${extension.projectNamePrefix}${projectName}")
     }
 
-    void generateProjectPropertiesFileForParent(Project p) {
-        def projectPropertiesFile = p.file('project.properties')
+    void generateProjectPropertiesFileForParent(AndroidProject p) {
+        def projectPropertiesFile = p.project.file('project.properties')
         List<String> libNames = []
         List<String> projectNames = []
         int maxReference = 0
         boolean shouldAddLibrary = false
-        if (p.plugins.hasPlugin('com.android.library')) {
+        if (p.project.plugins.hasPlugin('com.android.library')) {
             shouldAddLibrary = true
         }
         if (projectPropertiesFile.exists()) {

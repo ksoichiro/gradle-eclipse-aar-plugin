@@ -13,14 +13,14 @@ class CleanTask extends BaseTask {
         extension = project.eclipseAar
 
         findTargetProjects()
-        projects.each { Project p ->
-            def targets = [ p.file(extension.aarDependenciesDir) ]
+        projects.each { AndroidProject p ->
+            def targets = [ p.project.file(extension.aarDependenciesDir) ]
             if (extension.cleanLibsDirectoryEnabled) {
-                targets << p.file('libs')
+                targets << p.project.file('libs')
             }
             targets.each {
                 if (it.exists()) {
-                    p.delete(it)
+                    p.project.delete(it)
                     println "Deleted ${it}"
                 }
             }

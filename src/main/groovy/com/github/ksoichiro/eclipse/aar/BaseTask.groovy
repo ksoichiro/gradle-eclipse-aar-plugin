@@ -5,23 +5,27 @@ import org.gradle.api.Project
 
 class BaseTask extends DefaultTask {
     AarPluginExtension extension
-    Set<Project> projects = []
+    Set<AndroidProject> projects = []
 
     def findTargetProjects() {
         if (project.parent) {
             // Applied to sub project
-            projects.addAll(project.parent.subprojects)
+            project.parent.subprojects.each { Project p ->
+                projects << new AndroidProject(p)
+            }
         } else {
             // Applied to root project
-            projects << project
+            projects << new AndroidProject(project)
             if (project.subprojects) {
-                projects.addAll(project.subprojects)
+                project.subprojects.each { Project p ->
+                    projects << new AndroidProject(p)
+                }
             }
         }
         projects = projects.findAll { hasAndroidPlugin(it) }
     }
 
-    static boolean hasAndroidPlugin(Project p) {
-        p.plugins.hasPlugin('com.android.application') || p.plugins.hasPlugin('com.android.library')
+    static boolean hasAndroidPlugin(AndroidProject p) {
+        p.project.plugins.hasPlugin('com.android.application') || p.project.plugins.hasPlugin('com.android.library')
     }
 }

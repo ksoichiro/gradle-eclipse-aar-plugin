@@ -3,7 +3,6 @@ package com.github.ksoichiro.eclipse.aar
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.testfixtures.ProjectBuilder
 
 class TargetConfigurationsSpec extends BaseSpec {
@@ -16,7 +15,7 @@ class TargetConfigurationsSpec extends BaseSpec {
         when:
         GenerateTask task = project.tasks['generateEclipseDependencies'] as GenerateTask
         task.extension = project.eclipseAar
-        List<Configuration> result = task.androidConfigurations(project)
+        List<Configuration> result = task.androidConfigurations(new AndroidProject(project))
 
         then:
         result.size() == 2
@@ -33,7 +32,7 @@ class TargetConfigurationsSpec extends BaseSpec {
         when:
         GenerateTask task = project.tasks['generateEclipseDependencies'] as GenerateTask
         task.extension = project.eclipseAar
-        List<Configuration> result = task.androidConfigurations(project)
+        List<Configuration> result = task.androidConfigurations(new AndroidProject(project))
 
         then:
         result.size() == 3
