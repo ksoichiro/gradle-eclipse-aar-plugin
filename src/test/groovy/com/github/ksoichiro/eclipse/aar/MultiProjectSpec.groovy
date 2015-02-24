@@ -7,7 +7,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.testfixtures.ProjectBuilder
 
-class MulitiProjectSpec extends BaseSpec {
+class MultiProjectSpec extends BaseSpec {
     def "multiple projects"() {
         setup:
         def builder = ProjectBuilder.builder()
