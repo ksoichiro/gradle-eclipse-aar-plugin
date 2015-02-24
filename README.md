@@ -2,6 +2,7 @@
 
 [![Build Status](http://img.shields.io/travis/ksoichiro/gradle-eclipse-aar-plugin.svg?style=flat&branch=master)](https://travis-ci.org/ksoichiro/gradle-eclipse-aar-plugin)
 [![Coverage Status](https://coveralls.io/repos/ksoichiro/gradle-eclipse-aar-plugin/badge.svg?branch=master)](https://coveralls.io/r/ksoichiro/gradle-eclipse-aar-plugin?branch=master)
+[![Maven Central](http://img.shields.io/maven-central/v/com.github.ksoichiro/gradle-eclipse-aar-plugin.svg?style=flat)](https://github.com/ksoichiro/gradle-eclipse-aar-plugin/releases/latest)
 
 Gradle plugin to use Android AAR libraries on Eclipse.  
 With this plugin, you can manage dependencies with Gradle and build app on Eclipse.
@@ -34,14 +35,14 @@ just apply this plugin and configure it in `eclipseAar` closure.
 buildscript {
     repositories {
         mavenCentral()
-        // This plugin is currently distributed as SNAPSHOT.
-        maven {
-            url uri('https://oss.sonatype.org/content/repositories/snapshots/')
-        }
+        // Enable this if you use SNAPSHOT
+        //maven {
+        //    url uri('https://oss.sonatype.org/content/repositories/snapshots/')
+        //}
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
-        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.1.0-SNAPSHOT'
+        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.1.0'
     }
 }
 
