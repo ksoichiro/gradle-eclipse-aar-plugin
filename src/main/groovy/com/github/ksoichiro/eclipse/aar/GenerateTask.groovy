@@ -350,10 +350,11 @@ android.library=true
         if (file.exists()) {
             return
         }
+        def projectName = extension.projectName ?: p.name
         file.text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-\t<name>${p.name}</name>
+\t<name>${extension.projectNamePrefix}${projectName}</name>
 \t<comment></comment>
 \t<projects>
 \t</projects>
