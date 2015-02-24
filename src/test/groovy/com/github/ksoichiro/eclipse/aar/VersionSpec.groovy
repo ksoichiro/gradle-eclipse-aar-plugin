@@ -10,19 +10,10 @@ class VersionSpec extends BaseSpec {
     def "version with rc"() {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/version")).build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', 'project.properties'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
-        project.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
-        }
+        setupRepositories(project)
         project.dependencies {
             compile 'com.bingzer.android.driven:driven-gdrive:1.0.0'
         }

@@ -9,22 +9,13 @@ class CleanSpec extends BaseSpec {
     def "cleaning all directories by default"() {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/clean")).build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        deleteOutputs(project)
         def libsDirs = [project.file('aarDependencies'), project.file('libs')]
         libsDirs*.mkdirs()
 
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
-        project.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
-        }
+        setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
             compile 'com.nineoldandroids:library:2.4.0'
@@ -43,22 +34,13 @@ class CleanSpec extends BaseSpec {
     def "cleaning libs directory is enabled"() {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/clean")).build()
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        deleteOutputs(project)
         def libsDirs = [project.file('aarDependencies'), project.file('libs')]
         libsDirs*.mkdirs()
 
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
-        project.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
-        }
+        setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
             compile 'com.nineoldandroids:library:2.4.0'

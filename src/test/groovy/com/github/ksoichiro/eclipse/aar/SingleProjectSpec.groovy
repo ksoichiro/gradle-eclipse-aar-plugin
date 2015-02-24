@@ -302,12 +302,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         deleteOutputs(project)
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
-        project.repositories { RepositoryHandler it ->
-            it.mavenCentral()
-            it.maven {
-                it.url = project.uri("${System.env.ANDROID_HOME}/extras/android/m2repository")
-            }
-        }
+        setupRepositories(project)
         project.dependencies { DependencyHandler dh ->
             libs.each {
                 dh.add('compile', it)
