@@ -170,7 +170,8 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         File projectPropertiesFile = project.file('project.properties')
         projectPropertiesFile.text = """\
 target=android-21
-android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.1=externals/my.lib-1.0.0
+android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2
 """
 
         when:
@@ -232,11 +233,12 @@ android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.
 """
         projectPropertiesFile.exists()
         projectPropertiesFile.text == """target=android-21
-android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
-android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
-android.library.reference.3=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
-android.library.reference.4=aarDependencies/com.android.support-support-v4-21.0.2
-android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.1=externals/my.lib-1.0.0
+android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.4=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
+android.library.reference.5=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-21.0.0
 """
     }
 
