@@ -240,41 +240,7 @@ android.library=true
     void generateEclipseProjectFile(Project p, AndroidDependency dependency) {
         def projectName = extension.projectName ?: p.name
         def name = dependency.getQualifiedName()
-        p.file("${extension.aarDependenciesDir}/${name}/.project").text = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<projectDescription>
-\t<name>${extension.projectNamePrefix}${projectName}-${name}</name>
-\t<comment></comment>
-\t<projects>
-\t</projects>
-\t<buildSpec>
-\t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t</buildSpec>
-\t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
-\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
-\t</natures>
-</projectDescription>
-"""
+        p.file("${extension.aarDependenciesDir}/${name}/.project").text = projectFileText("${extension.projectNamePrefix}${projectName}-${name}")
     }
 
     void generateEclipseClasspathFileForParent(Project p) {
@@ -351,41 +317,7 @@ android.library=true
             return
         }
         def projectName = extension.projectName ?: p.name
-        file.text = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<projectDescription>
-\t<name>${extension.projectNamePrefix}${projectName}</name>
-\t<comment></comment>
-\t<projects>
-\t</projects>
-\t<buildSpec>
-\t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t</buildSpec>
-\t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
-\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
-\t</natures>
-</projectDescription>
-"""
+        file.text = projectFileText("${extension.projectNamePrefix}${projectName}")
     }
 
     void generateProjectPropertiesFileForParent(Project p) {
@@ -464,5 +396,43 @@ target=${extension.androidTarget}
             }
             projectPropertiesFile.text = content + entriesToAdd.join(System.getProperty('line.separator')) + System.getProperty('line.separator')
         }
+    }
+
+    static String projectFileText(String projectName) {
+        """\
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+\t<name>${projectName}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t</natures>
+</projectDescription>
+"""
     }
 }
