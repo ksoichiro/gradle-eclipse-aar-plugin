@@ -170,13 +170,13 @@ android.library=true
 android.library.reference.1=aarDependencies/com.android.support-recyclerview-v7-21.0.0
 android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
 """
-        File projectPropertiesAppFile = project.file('project.properties')
+        File projectPropertiesAppFile = projectApp.file('project.properties')
         projectPropertiesAppFile.text = """target=android-21
-android.library.reference.1=../library
-android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2
-android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
-android.library.reference.4=aarDependencies/com.android.support-support-v4-21.0.2
-android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.3=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.4=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.5=../library
 """
 
         when:
@@ -228,11 +228,11 @@ android.library.reference.1=aarDependencies/com.android.support-recyclerview-v7-
 android.library.reference.2=aarDependencies/com.android.support-support-v4-21.0.2
 """
         projectPropertiesAppFile.text == """target=android-21
-android.library.reference.1=../library
-android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2
-android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
-android.library.reference.4=aarDependencies/com.android.support-support-v4-21.0.2
-android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.3=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.4=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+android.library.reference.5=../library
 """
     }
 
