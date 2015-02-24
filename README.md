@@ -4,8 +4,14 @@
 [![Coverage Status](https://coveralls.io/repos/ksoichiro/gradle-eclipse-aar-plugin/badge.svg?branch=master)](https://coveralls.io/r/ksoichiro/gradle-eclipse-aar-plugin?branch=master)
 
 Gradle plugin to use Android AAR libraries on Eclipse.  
-You can manage dependencies with Gradle and build app on Eclipse.  
-Originally I was inspired by [this article](http://www.nodeclipse.org/projects/gradle/android/aar-for-Eclipse), then rewrote almost all part of it and added many improvements to automate conversion process and to cover several dependency/project conditions.
+With this plugin, you can manage dependencies with Gradle and build app on Eclipse.
+
+Android Studio has been officially released, but some of you still want/are forced to use Eclipse ADT for some reasons.
+Android Studio has much better build system by integrating Gradle, and many of the remarkable features are unavailable in Eclipse.
+In particular, many Android libraries are provided with AAR format recently, so it's now big disadvantage for Eclipse to manage these dependencies.
+This plugin will explode AAR libraries and create "Android Library Project"s or copy JARs for your project by executing just one command, and you just import these projects in Eclipse.
+
+Originally I was inspired by [this article](http://www.nodeclipse.org/projects/gradle/android/aar-for-Eclipse), then rewrote almost all of it and added many improvements to automate conversion process and to cover several dependency/project conditions.
 
 ![How it works](image.png)
 
