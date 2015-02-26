@@ -95,7 +95,7 @@ Or copy Gradle wrapper files into your project.
 If you use Gradle wrapper, you don't have to install Gradle.
 
 * `gradle`
-* `gradlew.sh`
+* `gradlew`
 * `gradlew.bat`
 
 ### Generate dependencies
