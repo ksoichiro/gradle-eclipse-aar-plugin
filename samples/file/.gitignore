@@ -1,0 +1,13 @@
+.gradle/
+*.iml
+/local.properties
+.idea/
+.DS_Store
+build/
+bin/
+gen/
+libs/
+aarDependencies/
+.classpath
+.project
+project.properties

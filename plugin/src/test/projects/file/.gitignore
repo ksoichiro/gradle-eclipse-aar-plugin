@@ -1,0 +1,7 @@
+aarDependencies/
+.gradle/
+libs/com.*.jar
+userHome/
+.classpath
+.project
+project.properties

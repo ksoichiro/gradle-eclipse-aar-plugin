@@ -1,1 +1,3 @@
 rootProject.name = 'gradle-eclipse-aar-plugin'
+include ':plugin', ':misc:samplelib'
+project(':plugin').name = 'gradle-eclipse-aar-plugin'

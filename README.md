@@ -131,6 +131,9 @@ If you don't have `project.properties` file, this plugin will create it.
 If you have `project.properties` file but don't have the required AAR dependency entries in it, this plugin will add these entries, too.  
 Therefore you don't have to care about them.
 
+But please note that if you have file dependencies (`libs/xxx.jar`),
+you should manually add entries for them to `project.properties` file.
+
 ### .classpath files?
 
 Eclipse has `.classpath` files to manage dependencies.  
@@ -139,6 +142,9 @@ For Android apps, each library projects must be declared as `<classpathentry>` t
 If you don't have `.classpath` file, this plugin will create it.  
 If you have `.classpath` file but don't have `<classpathentry>`s for the required libraries in it, this plugin will add these entries, too.  
 Therefore you don't have to care about them.
+
+But please note that if you have file dependencies (`libs/xxx.jar`),
+you should manually add entries for them to `.classpath` file.
 
 ### .project files?
 
