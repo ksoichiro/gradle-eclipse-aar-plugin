@@ -298,6 +298,39 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
         aarNames.find { !(it in resolvedAars) } == null
     }
 
+    def "Raw jar file dependencies"() {
+        setup:
+        Project project = setupProject([
+                'com.github.chrisbanes.photoview:library:1.2.3',
+                'com.github.amlcurran.showcaseview:library:5.0.0',
+                'com.android.support:appcompat-v7:21.0.2',
+        ])
+        List<String> resolvedJars = [
+                'com.android.support-appcompat-v7-21.0.2.jar',
+                'com.android.support-support-v4-21.0.2.jar',
+                'com.android.support-support-annotations-21.0.2.jar',
+                'com.github.chrisbanes.photoview-library-1.2.3.jar',
+                'com.github.amlcurran.showcaseview-library-5.0.0.jar',
+                'misc.jar'
+        ]
+        List<String> resolvedAars = [
+                'com.android.support-appcompat-v7-21.0.2',
+                'com.android.support-support-v4-21.0.2',
+                'com.github.chrisbanes.photoview-library-1.2.3',
+                'com.github.amlcurran.showcaseview-library-5.0.0',
+        ]
+        project.extensions.eclipseAar.jarDependenciesDir = 'jarDependencies'
+
+        when:
+        project.tasks.generateEclipseDependencies.execute()
+        List<String> jarNames = jarEntriesFromClasspathFiles(project)
+        List<String> aarNames = aarEntriesFromProjectProperties(project)
+
+        then:
+        jarNames.find { !(it in resolvedJars) } == null
+        aarNames.find { !(it in resolvedAars) } == null
+    }
+
     Project setupProject(List<String> libs) {
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
         deleteOutputs(project)

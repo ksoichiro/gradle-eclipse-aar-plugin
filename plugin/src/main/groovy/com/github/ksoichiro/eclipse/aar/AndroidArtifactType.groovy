@@ -3,5 +3,6 @@ package com.github.ksoichiro.eclipse.aar
 enum AndroidArtifactType {
     JAR,
     AAR,
-    PROJECT
+    PROJECT,
+    RAW_JAR,
 }

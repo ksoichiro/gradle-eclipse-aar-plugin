@@ -2,6 +2,7 @@ package com.github.ksoichiro.eclipse.aar
 
 import static com.github.ksoichiro.eclipse.aar.AndroidArtifactType.AAR
 import static com.github.ksoichiro.eclipse.aar.AndroidArtifactType.JAR
+import static com.github.ksoichiro.eclipse.aar.AndroidArtifactType.RAW_JAR
 
 class AndroidDependencySpec extends BaseSpec {
     def "getQualifiedName"() {
@@ -10,12 +11,13 @@ class AndroidDependencySpec extends BaseSpec {
 
         where:
         g | n | v | a | f || result
-        'com.example.foo' | 'bar' | '1.0.0' | JAR | new File('/path/to/file/bar-1.0.0.jar') || 'com.example.foo-bar-1.0.0'
-        null              | 'bar' | '1.0.0' | JAR | new File('/path/to/file/bar-1.0.0.jar') || 'bar-1.0.0'
-        'com.example.foo' | null  | '1.0.0' | JAR | new File('/path/to/file/bar-1.0.0.jar') || 'com.example.foo-1.0.0'
-        'com.example.foo' | 'bar' | null    | JAR | new File('/path/to/file/bar-1.0.0.jar') || 'com.example.foo-bar'
-        null              | null  | null    | JAR | new File('/path/to/file/bar-1.0.0.jar') || 'bar-1.0.0.jar'
-        null              | null  | null    | JAR | null                                    || ''
+        'com.example.foo' | 'bar' | '1.0.0' | JAR     | new File('/path/to/file/bar-1.0.0.jar') || 'com.example.foo-bar-1.0.0'
+        null              | 'bar' | '1.0.0' | JAR     | new File('/path/to/file/bar-1.0.0.jar') || 'bar-1.0.0'
+        'com.example.foo' | null  | '1.0.0' | JAR     | new File('/path/to/file/bar-1.0.0.jar') || 'com.example.foo-1.0.0'
+        'com.example.foo' | 'bar' | null    | JAR     | new File('/path/to/file/bar-1.0.0.jar') || 'com.example.foo-bar'
+        null              | null  | null    | JAR     | new File('/path/to/file/bar-1.0.0.jar') || 'bar-1.0.0'
+        null              | null  | null    | JAR     | null                                    || ''
+        null              | null  | null    | RAW_JAR | new File('/path/to/file/bar-1.0.0.jar') || 'bar-1.0.0'
     }
 
     def "isSameArtifact"() {

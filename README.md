@@ -159,6 +159,7 @@ Configurations for this plugin are written in `eclipseAar` closure.
 | ------------- | ------- | ----------- |
 | androidTarget | `android-21` | `target` value in dependency projects' project.properties |
 | aarDependenciesDir | `aarDependencies` | Directory to explode AARs |
+| jarDependenciesDir | (null) | Directory to locate JAR. |
 | projectNamePrefix | (Empty) | Project name prefix for AAR dependencies |
 | projectName | (Target project name) | Base project name for AAR dependencies |
 | cleanLibsDirectoryEnabled | `false` | Set to `true` if you want `libs` directory to be cleaned before files are generated. |

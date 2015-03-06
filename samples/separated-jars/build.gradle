@@ -1,0 +1,44 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url uri('../repo')
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:+'
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.github.ksoichiro.eclipse.aar'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:21.0.2'
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.melnykov:floatingactionbutton:1.0.7'
+    compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
+    compile fileTree(dir: 'jarDependencies', include: '*.jar')
+}
+
+eclipseAar {
+    androidTarget = 'android-21'
+    aarDependenciesDir = 'aarDependencies'
+    jarDependenciesDir = 'jarDependencies'
+    cleanLibsDirectoryEnabled = true
+}
+
+android {
+    compileSdkVersion 1
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src']
+        }
+    }
+}

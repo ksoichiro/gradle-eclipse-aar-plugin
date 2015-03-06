@@ -13,8 +13,11 @@ class AndroidDependency {
         if (isProject()) {
             return name
         }
+        if (isRawJar()) {
+            return filenameExtStripped()
+        }
         if (!group && !name && !version) {
-            return file?.name ?: ""
+            return filenameExtStripped()
         }
         def list = []
         if (group && !group.isEmpty()) {
@@ -33,11 +36,21 @@ class AndroidDependency {
         artifactType == AndroidArtifactType.PROJECT
     }
 
+    boolean isRawJar() {
+        artifactType == AndroidArtifactType.RAW_JAR
+    }
+
     boolean isSameArtifact(AndroidDependency dependency) {
         dependency && artifactType == dependency.artifactType && group == dependency.group && name == dependency.name
     }
 
     boolean isSameArtifactVersion(AndroidDependency dependency) {
         isSameArtifact(dependency) && version == dependency.version
+    }
+
+    String filenameExtStripped() {
+        file?.name?.lastIndexOf('.')?.with {
+            it != -1 ? file.name[0..<it] : file.name
+        } ?: ""
     }
 }
