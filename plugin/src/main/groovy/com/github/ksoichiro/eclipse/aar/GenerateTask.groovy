@@ -163,7 +163,7 @@ class GenerateTask extends BaseTask {
         Set<AndroidDependency> allDependencies = []
         for (Set<AndroidDependency> d : dependencies.values()) {
             d.findAll {
-                !it.isRawJar()
+                null!=it && !it.isRawJar()
             }.each { AndroidDependency dependency ->
                 allDependencies << dependency
             }
@@ -171,29 +171,31 @@ class GenerateTask extends BaseTask {
 
         Set<AndroidDependency> latestDependencies = []
         projectDependencies.each { AndroidDependency dependency ->
-            if (dependency.isRawJar()) {
-                latestDependencies << dependency
-            } else {
-                String latestJarVersion = "0"
-                def duplicateDependencies = allDependencies.findAll {
-                    dependency.isSameArtifact(getDependencyFromFile(it.file))
-                }
-                AndroidDependency latestDependency
-                if (1 < duplicateDependencies.size()) {
-                    duplicateDependencies.each {
-                        def d = getDependencyFromFile(it.file)
-                        if (versionIsNewerThan(d?.version, latestJarVersion)) {
-                            latestJarVersion = d?.version
-                        }
-                    }
-                    latestDependency = duplicateDependencies.find { getDependencyFromFile(it.file)?.version == latestJarVersion }
+            if(null != dependency){
+                if (dependency.isRawJar()) {
+                    latestDependencies << dependency
                 } else {
-                    latestJarVersion = dependency.version
-                    latestDependency = dependency
-                }
-                if (latestDependency) {
-                    latestDependency.version = latestJarVersion
-                    latestDependencies << latestDependency
+                    String latestJarVersion = "0"
+                    def duplicateDependencies = allDependencies.findAll {
+                        dependency.isSameArtifact(getDependencyFromFile(it.file))
+                    }
+                    AndroidDependency latestDependency
+                    if (1 < duplicateDependencies.size()) {
+                        duplicateDependencies.each {
+                            def d = getDependencyFromFile(it.file)
+                            if (versionIsNewerThan(d?.version, latestJarVersion)) {
+                                latestJarVersion = d?.version
+                            }
+                        }
+                        latestDependency = duplicateDependencies.find { getDependencyFromFile(it.file)?.version == latestJarVersion }
+                    } else {
+                        latestJarVersion = dependency.version
+                        latestDependency = dependency
+                    }
+                    if (latestDependency) {
+                        latestDependency.version = latestJarVersion
+                        latestDependencies << latestDependency
+                    }
                 }
             }
         }
