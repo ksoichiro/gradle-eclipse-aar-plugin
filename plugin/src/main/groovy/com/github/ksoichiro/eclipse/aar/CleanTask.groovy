@@ -14,7 +14,8 @@ class CleanTask extends BaseTask {
         findTargetProjects()
         projects.each { AndroidProject p ->
             def targets = [ p.project.file(extension.aarDependenciesDir) ]
-            if (extension.cleanLibsDirectoryEnabled) {
+            println p.project.name+".cleanLibsDirectoryEnabled="+p.project.eclipseAar.cleanLibsDirectoryEnabled
+            if (p.project.eclipseAar.cleanLibsDirectoryEnabled) {
                 targets << p.project.file('libs')
             }
             targets.each {
