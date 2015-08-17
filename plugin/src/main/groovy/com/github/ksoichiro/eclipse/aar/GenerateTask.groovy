@@ -163,7 +163,7 @@ class GenerateTask extends BaseTask {
         Set<AndroidDependency> allDependencies = []
         for (Set<AndroidDependency> d : dependencies.values()) {
             d.findAll {
-                null!=it && !it.isRawJar()
+                null != it && !it.isRawJar()
             }.each { AndroidDependency dependency ->
                 allDependencies << dependency
             }
@@ -171,7 +171,7 @@ class GenerateTask extends BaseTask {
 
         Set<AndroidDependency> latestDependencies = []
         projectDependencies.each { AndroidDependency dependency ->
-            if(null != dependency){
+            if (null != dependency) {
                 if (dependency.isRawJar()) {
                     latestDependencies << dependency
                 } else {
