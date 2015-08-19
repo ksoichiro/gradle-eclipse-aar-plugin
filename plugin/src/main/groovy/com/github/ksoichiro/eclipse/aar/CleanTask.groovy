@@ -15,6 +15,7 @@ class CleanTask extends BaseTask {
         projects.each { AndroidProject p ->
             def targets = [p.project.file(extension.aarDependenciesDir)]
             println "${p.project.name}.cleanLibsDirectoryEnabled = ${p.project.eclipseAar.cleanLibsDirectoryEnabled}"
+            // Check sub-project's setting to clean partially
             if (p.project.eclipseAar.cleanLibsDirectoryEnabled) {
                 targets << p.project.file('libs')
             }
