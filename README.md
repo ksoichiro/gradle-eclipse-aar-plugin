@@ -42,7 +42,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
-        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.1.1'
+        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.1.2'
     }
 }
 
