@@ -1,12 +1,12 @@
 package com.github.ksoichiro.eclipse.aar
 
+import org.apache.maven.artifact.versioning.ComparableVersion
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.tasks.TaskAction
-import org.gradle.mvn3.org.apache.maven.artifact.versioning.ComparableVersion
 
 import java.util.regex.Matcher
 
