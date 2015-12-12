@@ -94,7 +94,7 @@ Install Gradle 2.2.1+.
 Or copy Gradle wrapper files into your project.
 If you use Gradle wrapper, you don't have to install Gradle.
 
-* `gradle`
+* `gradle\wrapper\`
 * `gradlew`
 * `gradlew.bat`
 
