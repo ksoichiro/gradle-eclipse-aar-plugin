@@ -11,8 +11,15 @@ class AarPluginExtension {
     boolean cleanLibsDirectoryEnabled = false
     String projectName
     List<String> targetConfigurations = ['compile', 'debugCompile']
+    final String commit
+    final String committedAt
+    final String builtAt
 
     AarPluginExtension(Project project) {
         this.project = project
+        def versionInfo = new ConfigSlurper().parse(getClass().getClassLoader().getResourceAsStream('version.groovy').text)
+        this.commit = versionInfo.version.commit
+        this.committedAt = versionInfo.version.committedAt
+        this.builtAt = versionInfo.version.builtAt
     }
 }
