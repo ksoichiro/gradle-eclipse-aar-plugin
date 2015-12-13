@@ -9,6 +9,7 @@ apply plugin: 'signing'
 
 group = GROUP
 version = VERSION_NAME
+archivesBaseName = POM_ARTIFACT_ID
 
 // To release:
 // ./gradlew clean assemble uploadArchives -Prelease
