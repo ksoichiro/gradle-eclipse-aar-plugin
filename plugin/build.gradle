@@ -1,11 +1,26 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
+    }
+}
+
 plugins {
+    id 'maven'
+    id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.2'
     id 'net.saliman.cobertura' version '2.2.5'
     id 'com.github.kt3k.coveralls' version '2.3.1'
     id 'com.github.ksoichiro.build.info' version '0.1.2'
 }
 
 apply plugin: 'groovy'
-apply plugin: 'maven'
+apply plugin: 'com.gradle.plugin-publish'
 apply plugin: 'signing'
 
 group = GROUP
@@ -38,6 +53,9 @@ if (isReleaseBuild) {
 // and signing.keyId, signing.password, signing.secretKeyRingFile, too.
 def username = hasProperty("nexusUsername") ? project.getProperty("nexusUsername") : ""
 def password = hasProperty("nexusPassword") ? project.getProperty("nexusPassword") : ""
+
+def bintrayUsername = hasProperty("bintrayUsername") ? project.getProperty("bintrayUsername") : ""
+def bintrayApiKey = hasProperty("bintrayApiKey") ? project.getProperty("bintrayApiKey") : ""
 
 dependencies {
     compile gradleApi()
@@ -134,5 +152,60 @@ afterEvaluate { project ->
     artifacts {
         archives sourcesJar
         archives javadocJar
+    }
+
+    publishing {
+        publications {
+            plugin(MavenPublication) {
+                groupId GROUP
+                artifactId POM_ARTIFACT_ID
+                version VERSION_NAME
+
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+            }
+        }
+    }
+}
+
+bintray {
+    user = bintrayUsername
+    key = bintrayApiKey
+
+    publications = ['plugin']
+
+    pkg {
+        repo = 'maven'
+        name = POM_NAME
+        desc = POM_DESCRIPTION
+        websiteUrl = POM_URL
+        issueTrackerUrl = BINTRAY_ISSUE_TRACKER_URL
+        vcsUrl = BINTRAY_VCS_URL
+        licenses = ['Apache-2.0']
+        labels = ['gradle', 'plugin', 'Android', 'eclipse', 'AAR']
+        publicDownloadNumbers = true
+        version {
+            attributes = ['gradle-plugin': 'com.github.ksoichiro.eclipse.aar:com.github.ksoichiro:gradle-eclipse-aar-plugin']
+        }
+    }
+}
+
+pluginBundle {
+    website = POM_URL
+    vcsUrl = BINTRAY_VCS_URL
+
+    description = POM_DESCRIPTION
+
+    plugins {
+        plugin {
+            id = GRADLE_PLUGIN_ID
+            displayName = POM_NAME
+            tags = ['Android', 'eclipse', 'AAR']
+        }
+    }
+
+    mavenCoordinates {
+        artifactId = POM_ARTIFACT_ID
     }
 }
