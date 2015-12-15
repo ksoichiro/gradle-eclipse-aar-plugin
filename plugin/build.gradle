@@ -1,6 +1,7 @@
 plugins {
     id 'net.saliman.cobertura' version '2.2.5'
     id 'com.github.kt3k.coveralls' version '2.3.1'
+    id 'com.github.ksoichiro.build.info' version '0.1.2'
 }
 
 apply plugin: 'groovy'
@@ -61,27 +62,6 @@ install {
 cobertura {
     coverageFormats = ['html', 'xml']
     coverageSourceDirs = sourceSets.main.groovy.srcDirs
-}
-
-try {
-    ext {
-        commit = "git rev-parse --short HEAD".execute().text.trim()
-        committedAt = "git log -n 1 --format=\"%ci\"".execute().text.trim().drop(1)[0..-2]
-    }
-} catch (ignored) {
-    ext {
-        commit = "unknown"
-        committedAt = "unknown"
-    }
-}
-
-processResources {
-    filesMatching('**/version.groovy') {
-        expand(
-                commit: commit,
-                committedAt: committedAt,
-                builtAt: new Date().format("yyyy-MM-dd HH:mm:ss Z"))
-    }
 }
 
 afterEvaluate { project ->
