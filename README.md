@@ -33,6 +33,16 @@ If your project already uses Gradle and Android Studio, just apply this plugin.
 Gradle 2.1+:
 
 ```groovy
+buildscript {
+    repositories {
+        mavenCentral()
+        // or jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.0.0'
+    }
+}
+
 plugins {
     id 'com.github.ksoichiro.eclipse.aar' version '0.1.4'
 }
