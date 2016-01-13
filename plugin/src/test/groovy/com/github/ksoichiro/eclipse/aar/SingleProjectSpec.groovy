@@ -53,13 +53,6 @@ class SingleProjectSpec extends BaseSpec {
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-appcompat-v7-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/com.nineoldandroids-library-2.4.0.jar"/>
-\t<classpathentry kind="lib" path="libs/com.melnykov-floatingactionbutton-1.0.7.jar"/>
-\t<classpathentry kind="lib" path="libs/com.github.ksoichiro-android-observablescrollview-1.5.0.jar"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-support-annotations-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
 </classpath>
 """
         projectFile.exists()
@@ -128,7 +121,6 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
-\t<classpathentry kind="lib" path="libs/com.nineoldandroids-library-2.4.0.jar"/>
 </classpath>
 """
         File projectFile = project.file('.project')
@@ -184,15 +176,8 @@ android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 \t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
-\t<classpathentry kind="lib" path="libs/com.nineoldandroids-library-2.4.0.jar"/>
 \t<classpathentry kind="src" path="src"/>
 \t<classpathentry kind="src" path="gen"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-appcompat-v7-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/com.melnykov-floatingactionbutton-1.0.7.jar"/>
-\t<classpathentry kind="lib" path="libs/com.github.ksoichiro-android-observablescrollview-1.5.0.jar"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-support-annotations-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-support-v4-21.0.2.jar"/>
-\t<classpathentry kind="lib" path="libs/com.android.support-recyclerview-v7-21.0.0.jar"/>
 </classpath>
 """
         projectFile.exists()

@@ -28,8 +28,29 @@ This plugin is tested under these conditions.
 
 ### Prepare build.gradle
 
-If your project already uses Gradle and Android Studio,
-just apply this plugin and configure it in `eclipseAar` closure.
+If your project already uses Gradle and Android Studio, just apply this plugin.
+
+Gradle 2.1+:
+
+```groovy
+buildscript {
+    repositories {
+        mavenCentral()
+        // or jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.0.0'
+    }
+}
+
+plugins {
+    id 'com.github.ksoichiro.eclipse.aar' version '0.1.4'
+}
+
+apply plugin: 'com.android.application'
+```
+
+Gradle 2.0 and former:
 
 ```groovy
 buildscript {
@@ -42,7 +63,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
-        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.1.1'
+        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.1.4'
     }
 }
 
@@ -50,7 +71,11 @@ apply plugin: 'com.android.application'
 
 // Apply this plugin
 apply plugin: 'com.github.ksoichiro.eclipse.aar'
+```
 
+And configure it in `eclipseAar` closure.
+
+```groovy
 repositories {
     mavenCentral()
 }
@@ -94,7 +119,7 @@ Install Gradle 2.2.1+.
 Or copy Gradle wrapper files into your project.
 If you use Gradle wrapper, you don't have to install Gradle.
 
-* `gradle`
+* `gradle\wrapper\`
 * `gradlew`
 * `gradlew.bat`
 

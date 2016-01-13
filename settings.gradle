@@ -1,3 +1,2 @@
-rootProject.name = 'gradle-eclipse-aar-plugin'
+rootProject.name = POM_NAME
 include ':plugin', ':misc:samplelib'
-project(':plugin').name = 'gradle-eclipse-aar-plugin'

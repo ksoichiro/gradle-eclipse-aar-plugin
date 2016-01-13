@@ -1,12 +1,12 @@
 package com.github.ksoichiro.eclipse.aar
 
+import org.apache.maven.artifact.versioning.ComparableVersion
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.tasks.TaskAction
-import org.gradle.mvn3.org.apache.maven.artifact.versioning.ComparableVersion
 
 import java.util.regex.Matcher
 
@@ -163,7 +163,7 @@ class GenerateTask extends BaseTask {
         Set<AndroidDependency> allDependencies = []
         for (Set<AndroidDependency> d : dependencies.values()) {
             d.findAll {
-                null!=it && !it.isRawJar()
+                null != it && !it.isRawJar()
             }.each { AndroidDependency dependency ->
                 allDependencies << dependency
             }
@@ -171,7 +171,7 @@ class GenerateTask extends BaseTask {
 
         Set<AndroidDependency> latestDependencies = []
         projectDependencies.each { AndroidDependency dependency ->
-            if(null != dependency){
+            if (null != dependency) {
                 if (dependency.isRawJar()) {
                     latestDependencies << dependency
                 } else {
@@ -294,14 +294,12 @@ android.library=true
         }
         def classpathFile = p.project.file('.classpath')
         List<String> srcPaths = []
-        List<String> libNames = []
         if (classpathFile.exists()) {
             // Aggregate src paths and dependencies
             def classPaths = new XmlSlurper().parseText(classpathFile.text)
             def srcPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'src' }
             srcPaths = srcPathEntries.collect { it.@path.text() }
             def libClassPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'lib' }
-            libNames = libClassPathEntries.collect { it.@path.text().replaceFirst('^libs/', '') }
         } else {
             // Create minimum classpath file
             srcPaths = androidSrcPaths
@@ -321,16 +319,6 @@ android.library=true
         androidSrcPaths = androidSrcPaths.findAll { srcPaths.find { path -> path == it} == null }
         if (androidSrcPaths) {
             def entriesToAdd = androidSrcPaths.collect { it -> "\t<classpathentry kind=\"src\" path=\"${it}\"/>" }
-            def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
-            lines += entriesToAdd
-            lines += "</classpath>${System.getProperty('line.separator')}"
-            classpathFile.text = lines.join(System.getProperty('line.separator'))
-        }
-
-        List<String> jars = fileDependencies[p].collect { "${it.getQualifiedName()}.jar" }
-        jars = jars.findAll { libNames.find { lib -> lib == it } == null }
-        if (jars) {
-            def entriesToAdd = jars.collect { it -> "\t<classpathentry kind=\"lib\" path=\"libs/${it}\"/>" }
             def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
             lines += entriesToAdd
             lines += "</classpath>${System.getProperty('line.separator')}"
