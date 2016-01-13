@@ -392,6 +392,7 @@ target=${extension.androidTarget}
 
         List<String> list = projectDependencies[p]?.collect { it.getQualifiedName().replaceFirst('^:', '') }
         list = list?.findAll { projectNames.find { prj -> prj == it } == null }
+        list = list.unique()
         list?.each {
             maxReference++
             entriesToAdd << "android.library.reference.${maxReference}=../${it}"
@@ -399,6 +400,7 @@ target=${extension.androidTarget}
 
         List<String> aars = fileDependencies[p].findAll { it.artifactType == AndroidArtifactType.AAR }?.collect { it.getQualifiedName() }
         aars = aars?.findAll { libNames.find { lib -> lib == it } == null }
+        aars = aars.unique()
         aars?.each {
             maxReference++
             entriesToAdd << "android.library.reference.${maxReference}=${extension.aarDependenciesDir}/${it}"
