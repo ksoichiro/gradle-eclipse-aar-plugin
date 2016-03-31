@@ -9,6 +9,7 @@ class AarPluginExtension {
     String jarDependenciesDir
     String projectNamePrefix = ''
     boolean cleanLibsDirectoryEnabled = false
+    boolean andmore = false
     String projectName
     List<String> targetConfigurations = ['compile', 'debugCompile']
 

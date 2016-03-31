@@ -226,6 +226,85 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
 """
     }
 
+    def "normalAndmoreProject"() {
+        setup:
+        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
+        deleteOutputs(project)
+        project.plugins.apply AppPlugin
+        project.plugins.apply BaseSpec.PLUGIN_ID
+        setupRepositories(project)
+        project.dependencies {
+            compile 'com.android.support:appcompat-v7:21.0.2'
+            compile 'com.nineoldandroids:library:2.4.0'
+            compile 'com.melnykov:floatingactionbutton:1.0.7'
+            compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
+        }
+        project.android.sourceSets.main.java.srcDirs = [ 'src' ]
+        project.extensions.eclipseAar.andmore = true
+
+        when:
+        project.tasks.generateEclipseDependencies.execute()
+        File classpathFile = project.file('.classpath')
+        File projectFile = project.file('.project')
+        File projectPropertiesFile = project.file('project.properties')
+
+        then:
+        classpathFile.exists()
+        classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="gen"/>
+\t<classpathentry kind="con" path="org.eclipse.andmore.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="org.eclipse.andmore.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="org.eclipse.andmore.DEPENDENCIES"/>
+\t<classpathentry kind="output" path="bin/classes"/>
+</classpath>
+"""
+        projectFile.exists()
+        projectFile.text == """<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+\t<name>${project.name}</name>
+\t<comment></comment>
+\t<projects>
+\t</projects>
+\t<buildSpec>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.andmore.ResourceManagerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.andmore.PreCompilerBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t\t<buildCommand>
+\t\t\t<name>org.eclipse.andmore.ApkBuilder</name>
+\t\t\t<arguments>
+\t\t\t</arguments>
+\t\t</buildCommand>
+\t</buildSpec>
+\t<natures>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
+\t\t<nature>org.eclipse.andmore.AndroidNature</nature>
+\t</natures>
+</projectDescription>
+"""
+        projectPropertiesFile.exists()
+        projectPropertiesFile.text == """target=android-21
+android.library.reference.1=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.2=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.3=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
+android.library.reference.4=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+"""
+    }
+
     def "Duplicate dependency names"() {
         setup:
         Project project = setupProject([

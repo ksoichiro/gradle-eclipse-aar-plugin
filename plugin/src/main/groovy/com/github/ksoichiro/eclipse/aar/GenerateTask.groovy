@@ -14,6 +14,9 @@ class GenerateTask extends BaseTask {
     Map<AndroidProject, Set<AndroidDependency>> fileDependencies
     Map<AndroidProject, Set<AndroidDependency>> projectDependencies
     Map<String, ResolvedDependency> allConfigurationsDependencies
+    static final ADT_PACKAGE = 'com.android.ide.eclipse.adt'
+    static final ANDMORE_PACKAGE = 'org.eclipse.andmore'
+    String toolPackage
 
     GenerateTask() {
         description = 'Used for Eclipse. Copies all AAR dependencies for library directory.'
@@ -22,6 +25,7 @@ class GenerateTask extends BaseTask {
     @TaskAction
     def exec() {
         extension = project.eclipseAar
+        toolPackage = extension.andmore ? ANDMORE_PACKAGE : ADT_PACKAGE
         fileDependencies = [:]
         projectDependencies = [:]
 
@@ -256,9 +260,9 @@ android.library=true
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 \t<classpathentry kind="src" path="gen"/>
-\t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+\t<classpathentry kind="con" path="${toolPackage}.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="${toolPackage}.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="${toolPackage}.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
 </classpath>
 """
@@ -267,7 +271,7 @@ android.library=true
     void generateEclipseProjectFile(AndroidProject p, AndroidDependency dependency) {
         def projectName = extension.projectName ?: p.project.name
         def name = dependency.getQualifiedName()
-        p.project.file("${extension.aarDependenciesDir}/${name}/.project").text = projectFileText("${extension.projectNamePrefix}${projectName}-${name}")
+        p.project.file("${extension.aarDependenciesDir}/${name}/.project").text = projectFileText("${extension.projectNamePrefix}${projectName}-${name}", toolPackage)
     }
 
     void generateEclipseClasspathFileForParent(AndroidProject p) {
@@ -308,9 +312,9 @@ android.library=true
             classpathFile.text = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>${srcPathEntries}
-\t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+\t<classpathentry kind="con" path="${toolPackage}.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="${toolPackage}.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="${toolPackage}.DEPENDENCIES"/>
 \t<classpathentry kind="output" path="bin/classes"/>
 </classpath>
 """
@@ -332,7 +336,7 @@ android.library=true
             return
         }
         def projectName = extension.projectName ?: p.project.name
-        file.text = projectFileText("${extension.projectNamePrefix}${projectName}")
+        file.text = projectFileText("${extension.projectNamePrefix}${projectName}", toolPackage)
     }
 
     void generateProjectPropertiesFileForParent(AndroidProject p) {
@@ -415,7 +419,7 @@ target=${extension.androidTarget}
         }
     }
 
-    static String projectFileText(String projectName) {
+    static String projectFileText(String projectName, String toolPackage) {
         """\
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
@@ -425,12 +429,12 @@ target=${extension.androidTarget}
 \t</projects>
 \t<buildSpec>
 \t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.ResourceManagerBuilder</name>
+\t\t\t<name>${toolPackage}.ResourceManagerBuilder</name>
 \t\t\t<arguments>
 \t\t\t</arguments>
 \t\t</buildCommand>
 \t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.PreCompilerBuilder</name>
+\t\t\t<name>${toolPackage}.PreCompilerBuilder</name>
 \t\t\t<arguments>
 \t\t\t</arguments>
 \t\t</buildCommand>
@@ -440,14 +444,14 @@ target=${extension.androidTarget}
 \t\t\t</arguments>
 \t\t</buildCommand>
 \t\t<buildCommand>
-\t\t\t<name>com.android.ide.eclipse.adt.ApkBuilder</name>
+\t\t\t<name>${toolPackage}.ApkBuilder</name>
 \t\t\t<arguments>
 \t\t\t</arguments>
 \t\t</buildCommand>
 \t</buildSpec>
 \t<natures>
 \t\t<nature>org.eclipse.jdt.core.javanature</nature>
-\t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t\t<nature>${toolPackage}.AndroidNature</nature>
 \t</natures>
 </projectDescription>
 """
