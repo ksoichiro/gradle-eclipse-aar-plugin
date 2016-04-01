@@ -19,11 +19,9 @@ class CleanTask extends BaseTask {
             if (p.project.eclipseAar.cleanLibsDirectoryEnabled) {
                 targets << p.project.file('libs')
             }
-            targets.each {
-                if (it.exists()) {
-                    p.project.delete(it)
-                    println "Deleted ${it}"
-                }
+            targets.findAll { it.exists() }?.each {
+                p.project.delete(it)
+                println "Deleted ${it}"
             }
         }
     }

@@ -10,16 +10,12 @@ class BaseTask extends DefaultTask {
     def findTargetProjects() {
         if (project.parent) {
             // Applied to sub project
-            project.parent.subprojects.each { Project p ->
-                projects << new AndroidProject(p)
-            }
+            projects.addAll(project.parent.subprojects.collect { new AndroidProject(it) })
         } else {
             // Applied to root project
             projects << new AndroidProject(project)
             if (project.subprojects) {
-                project.subprojects.each { Project p ->
-                    projects << new AndroidProject(p)
-                }
+                projects.addAll(project.subprojects.collect { new AndroidProject(it) })
             }
         }
         projects = projects.findAll { hasAndroidPlugin(it) }

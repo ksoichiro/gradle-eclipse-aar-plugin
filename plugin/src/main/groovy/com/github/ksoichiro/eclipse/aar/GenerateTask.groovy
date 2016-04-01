@@ -1,5 +1,6 @@
 package com.github.ksoichiro.eclipse.aar
 
+import com.github.ksoichiro.eclipse.aar.generator.*
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
@@ -8,15 +9,10 @@ import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.tasks.TaskAction
 
-import java.util.regex.Matcher
-
 class GenerateTask extends BaseTask {
     Map<AndroidProject, Set<AndroidDependency>> fileDependencies
     Map<AndroidProject, Set<AndroidDependency>> projectDependencies
     Map<String, ResolvedDependency> allConfigurationsDependencies
-    static final ADT_PACKAGE = 'com.android.ide.eclipse.adt'
-    static final ANDMORE_PACKAGE = 'org.eclipse.andmore'
-    String toolPackage
 
     GenerateTask() {
         description = 'Used for Eclipse. Copies all AAR dependencies for library directory.'
@@ -25,7 +21,6 @@ class GenerateTask extends BaseTask {
     @TaskAction
     def exec() {
         extension = project.eclipseAar
-        toolPackage = extension.andmore ? ANDMORE_PACKAGE : ADT_PACKAGE
         fileDependencies = [:]
         projectDependencies = [:]
 
@@ -64,7 +59,9 @@ class GenerateTask extends BaseTask {
                     def localDependency = configuration.dependencies.find { d -> convertedPathExtStripped.endsWith("${d.name}-release") }
                     if (localDependency instanceof ProjectDependency) {
                         // ProjectDependency should be not be exploded, just include in project.properties with relative path
-                        AndroidProject dependencyProject = projects.find { it.project.name == ((ProjectDependency) localDependency).dependencyProject.name }
+                        AndroidProject dependencyProject = projects.find {
+                            it.project.name == ((ProjectDependency) localDependency).dependencyProject.name
+                        }
                         def d = new AndroidDependency()
                         d.with {
                             name = dependencyProject.project.name
@@ -174,32 +171,32 @@ class GenerateTask extends BaseTask {
         }
 
         Set<AndroidDependency> latestDependencies = []
-        projectDependencies.each { AndroidDependency dependency ->
-            if (null != dependency) {
-                if (dependency.isRawJar()) {
-                    latestDependencies << dependency
-                } else {
-                    String latestJarVersion = "0"
-                    def duplicateDependencies = allDependencies.findAll {
-                        dependency.isSameArtifact(getDependencyFromFile(it.file))
-                    }
-                    AndroidDependency latestDependency
-                    if (1 < duplicateDependencies.size()) {
-                        duplicateDependencies.each {
-                            def d = getDependencyFromFile(it.file)
-                            if (versionIsNewerThan(d?.version, latestJarVersion)) {
-                                latestJarVersion = d?.version
-                            }
+        projectDependencies.findAll { it != null }?.each { AndroidDependency dependency ->
+            if (dependency.isRawJar()) {
+                latestDependencies << dependency
+            } else {
+                String latestJarVersion = "0"
+                def duplicateDependencies = allDependencies.findAll {
+                    dependency.isSameArtifact(getDependencyFromFile(it.file))
+                }
+                AndroidDependency latestDependency
+                if (1 < duplicateDependencies.size()) {
+                    duplicateDependencies.each {
+                        def d = getDependencyFromFile(it.file)
+                        if (versionIsNewerThan(d?.version, latestJarVersion)) {
+                            latestJarVersion = d?.version
                         }
-                        latestDependency = duplicateDependencies.find { getDependencyFromFile(it.file)?.version == latestJarVersion }
-                    } else {
-                        latestJarVersion = dependency.version
-                        latestDependency = dependency
                     }
-                    if (latestDependency) {
-                        latestDependency.version = latestJarVersion
-                        latestDependencies << latestDependency
+                    latestDependency = duplicateDependencies.find {
+                        getDependencyFromFile(it.file)?.version == latestJarVersion
                     }
+                } else {
+                    latestJarVersion = dependency.version
+                    latestDependency = dependency
+                }
+                if (latestDependency) {
+                    latestDependency.version = latestJarVersion
+                    latestDependencies << latestDependency
                 }
             }
         }
@@ -249,211 +246,48 @@ class GenerateTask extends BaseTask {
     }
 
     void generateProjectPropertiesFile(AndroidProject p, AndroidDependency dependency) {
-        p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/project.properties").text = """\
-target=${extension.androidTarget}
-android.library=true
-"""
+        new ProjectPropertiesFileGenerator(
+                androidTarget: extension.androidTarget)
+                .generate(p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/project.properties"))
     }
 
     void generateEclipseClasspathFile(AndroidProject p, AndroidDependency dependency) {
-        p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/.classpath").text = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-\t<classpathentry kind="src" path="gen"/>
-\t<classpathentry kind="con" path="${toolPackage}.ANDROID_FRAMEWORK"/>
-\t<classpathentry exported="true" kind="con" path="${toolPackage}.LIBRARIES"/>
-\t<classpathentry exported="true" kind="con" path="${toolPackage}.DEPENDENCIES"/>
-\t<classpathentry kind="output" path="bin/classes"/>
-</classpath>
-"""
+        new ClasspathFileGenerator(
+                andmore: extension.andmore)
+                .generate(p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/.classpath"))
     }
 
     void generateEclipseProjectFile(AndroidProject p, AndroidDependency dependency) {
         def projectName = extension.projectName ?: p.project.name
         def name = dependency.getQualifiedName()
-        p.project.file("${extension.aarDependenciesDir}/${name}/.project").text = projectFileText("${extension.projectNamePrefix}${projectName}-${name}", toolPackage)
+        new ProjectFileGenerator(
+                projectName: "${extension.projectNamePrefix}${projectName}-${name}",
+                andmore: extension.andmore)
+                .generate(p.project.file("${extension.aarDependenciesDir}/${name}/.project"))
     }
 
     void generateEclipseClasspathFileForParent(AndroidProject p) {
-        // Use srcDirs definition for classpath entry
-        def androidSrcDirs = []
-        p.project.android?.sourceSets?.findAll { it.name in ['main', 'debug'] }?.each {
-            if (it.java?.srcDirs) {
-                it.java.srcDirs.each { srcDir ->
-                    if (srcDir.exists()) {
-                        androidSrcDirs << srcDir
-                    }
-                }
-            }
-        }
-        if (0 == androidSrcDirs.size()) {
-            androidSrcDirs = ['src/main/java']
-        }
-        if (!androidSrcDirs.contains('gen')) {
-            androidSrcDirs << 'gen'
-        }
-        def androidSrcPaths = []
-        androidSrcDirs.each {
-            androidSrcPaths << (it.toString() - p.project.projectDir.path).replaceFirst("^[/\\\\]", '')
-        }
-        def classpathFile = p.project.file('.classpath')
-        List<String> srcPaths = []
-        if (classpathFile.exists()) {
-            // Aggregate src paths and dependencies
-            def classPaths = new XmlSlurper().parseText(classpathFile.text)
-            def srcPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'src' }
-            srcPaths = srcPathEntries.collect { it.@path.text() }
-            def libClassPathEntries = classPaths.classpathentry?.findAll { it.@kind?.text() == 'lib' }
-        } else {
-            // Create minimum classpath file
-            srcPaths = androidSrcPaths
-            def srcPathEntries = androidSrcPaths.collect { """
-\t<classpathentry kind="src" path="${it}"/>""" }.join('')
-            classpathFile.text = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>${srcPathEntries}
-\t<classpathentry kind="con" path="${toolPackage}.ANDROID_FRAMEWORK"/>
-\t<classpathentry exported="true" kind="con" path="${toolPackage}.LIBRARIES"/>
-\t<classpathentry exported="true" kind="con" path="${toolPackage}.DEPENDENCIES"/>
-\t<classpathentry kind="output" path="bin/classes"/>
-</classpath>
-"""
-        }
-
-        androidSrcPaths = androidSrcPaths.findAll { srcPaths.find { path -> path == it} == null }
-        if (androidSrcPaths) {
-            def entriesToAdd = androidSrcPaths.collect { it -> "\t<classpathentry kind=\"src\" path=\"${it}\"/>" }
-            def lines = classpathFile.readLines()?.findAll { it != '</classpath>' }
-            lines += entriesToAdd
-            lines += "</classpath>${System.getProperty('line.separator')}"
-            classpathFile.text = lines.join(System.getProperty('line.separator'))
-        }
+        new ParentClasspathFileGenerator(
+                project: p.project,
+                andmore: extension.andmore)
+                .generate(p.project.file('.classpath'))
     }
 
     void generateEclipseProjectFileForParent(AndroidProject p) {
-        def file = p.project.file(".project")
-        if (file.exists()) {
-            return
-        }
         def projectName = extension.projectName ?: p.project.name
-        file.text = projectFileText("${extension.projectNamePrefix}${projectName}", toolPackage)
+        new ProjectFileGenerator(
+                projectName: "${extension.projectNamePrefix}${projectName}",
+                andmore: extension.andmore)
+                .generate(p.project.file(".project"))
     }
 
     void generateProjectPropertiesFileForParent(AndroidProject p) {
-        def projectPropertiesFile = p.project.file('project.properties')
-        List<String> libNames = []
-        List<String> projectNames = []
-        int maxReference = 0
-        boolean shouldAddLibrary = false
-        if (p.project.plugins.hasPlugin('com.android.library')) {
-            shouldAddLibrary = true
-        }
-        if (projectPropertiesFile.exists()) {
-            Properties props = new Properties()
-            projectPropertiesFile.withInputStream { stream -> props.load(stream) }
-
-            props.propertyNames().findAll {
-                it =~ /^android\.library\.reference\.[0-9]+/
-            }.each {
-                Matcher mValue = props[it] =~ /^${extension.aarDependenciesDir}\\/(.*)/
-                if (mValue.matches()) {
-                    libNames << mValue[0][1]
-                    Matcher mName = it =~ /^android\.library\.reference\.([0-9]+)/
-                    if (mName.matches()) {
-                        int ref = mName[0][1].toInteger()
-                        if (maxReference < ref) {
-                            maxReference = ref
-                        }
-                    }
-                } else {
-                    mValue = props[it] =~ /^\.\.\/(.*)/
-                    if (mValue.matches()) {
-                        projectNames << mValue[0][1]
-                        Matcher mName = it =~ /^android\.library\.reference\.([0-9]+)/
-                        if (mName.matches()) {
-                            int ref = mName[0][1].toInteger()
-                            if (maxReference < ref) {
-                                maxReference = ref
-                            }
-                        }
-                    }
-                }
-            }
-            if (shouldAddLibrary && props.containsKey('android.library')) {
-                shouldAddLibrary = false
-            }
-        } else {
-            // Create minimum properties file
-            projectPropertiesFile.text = """\
-target=${extension.androidTarget}
-"""
-        }
-
-        def entriesToAdd = []
-        if (shouldAddLibrary) {
-            entriesToAdd << 'android.library=true'
-        }
-
-        List<String> list = projectDependencies[p]?.collect { it.getQualifiedName().replaceFirst('^:', '') }
-        list = list?.findAll { projectNames.find { prj -> prj == it } == null }
-        list?.unique()
-        list?.each {
-            maxReference++
-            entriesToAdd << "android.library.reference.${maxReference}=../${it}"
-        }
-
-        List<String> aars = fileDependencies[p].findAll { it.artifactType == AndroidArtifactType.AAR }?.collect { it.getQualifiedName() }
-        aars = aars?.findAll { libNames.find { lib -> lib == it } == null }
-        aars?.unique()
-        aars?.each {
-            maxReference++
-            entriesToAdd << "android.library.reference.${maxReference}=${extension.aarDependenciesDir}/${it}"
-        }
-
-        if (0 < entriesToAdd.size()) {
-            def content = projectPropertiesFile.text
-            if (!content.endsWith(System.getProperty('line.separator'))) {
-                content += System.getProperty('line.separator')
-            }
-            projectPropertiesFile.text = content + entriesToAdd.join(System.getProperty('line.separator')) + System.getProperty('line.separator')
-        }
-    }
-
-    static String projectFileText(String projectName, String toolPackage) {
-        """\
-<?xml version="1.0" encoding="UTF-8"?>
-<projectDescription>
-\t<name>${projectName}</name>
-\t<comment></comment>
-\t<projects>
-\t</projects>
-\t<buildSpec>
-\t\t<buildCommand>
-\t\t\t<name>${toolPackage}.ResourceManagerBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>${toolPackage}.PreCompilerBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t\t<buildCommand>
-\t\t\t<name>${toolPackage}.ApkBuilder</name>
-\t\t\t<arguments>
-\t\t\t</arguments>
-\t\t</buildCommand>
-\t</buildSpec>
-\t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
-\t\t<nature>${toolPackage}.AndroidNature</nature>
-\t</natures>
-</projectDescription>
-"""
+        new ParentProjectPropertiesFileGenerator(
+                project: p.project,
+                androidTarget: extension.androidTarget,
+                aarDependenciesDir: extension.aarDependenciesDir,
+                fileDependencies: fileDependencies[p],
+                projectDependencies: projectDependencies[p])
+                .generate(p.project.file('project.properties'))
     }
 }
