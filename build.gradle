@@ -7,3 +7,14 @@ allprojects {
     sourceCompatibility = 1.6
     targetCompatibility = 1.6
 }
+
+apply plugin: 'idea'
+
+idea.module.excludeDirs += [
+    file('samples/repo'),
+]
+fileTree(dir: 'samples').visit { details ->
+    if (details.name in ['.gradle', 'bin', 'gen', 'libs', 'aarDependencies']) {
+        idea.module.excludeDirs << details.file
+    }
+}
