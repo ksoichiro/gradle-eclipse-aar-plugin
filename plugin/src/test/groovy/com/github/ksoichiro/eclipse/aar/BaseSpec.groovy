@@ -9,14 +9,6 @@ import java.util.regex.Matcher
 class BaseSpec extends Specification {
     static final String PLUGIN_ID = 'com.github.ksoichiro.eclipse.aar'
 
-    void deleteOutputs(Project project) {
-        ['.gradle', 'userHome', 'aarDependencies', 'libs', '.classpath', '.project', 'project.properties'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
-    }
-
     void setupRepositories(Project project) {
         project.repositories { RepositoryHandler it ->
             it.mavenCentral()
@@ -47,5 +39,11 @@ class BaseSpec extends Specification {
             }
         }
         aarNames
+    }
+
+    def addStaticJarFileTo(File destDir) {
+        new File(destDir, 'misc.jar').withOutputStream {
+            it.write(getClass().getResourceAsStream("/misc.jar").bytes)
+        }
     }
 }

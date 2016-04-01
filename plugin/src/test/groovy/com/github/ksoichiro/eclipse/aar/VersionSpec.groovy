@@ -3,13 +3,19 @@ package com.github.ksoichiro.eclipse.aar
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class VersionSpec extends BaseSpec {
+    @Rule
+    TemporaryFolder temporaryFolder
 
     def "version with rc"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/version")).build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         setupRepositories(project)

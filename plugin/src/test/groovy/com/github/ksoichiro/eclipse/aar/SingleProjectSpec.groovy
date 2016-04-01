@@ -4,8 +4,12 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class SingleProjectSpec extends BaseSpec {
+    @Rule
+    TemporaryFolder temporaryFolder
 
     def "apply"() {
         setup:
@@ -22,8 +26,11 @@ class SingleProjectSpec extends BaseSpec {
 
     def "normalProject"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .withName('normal')
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         setupRepositories(project)
@@ -33,6 +40,7 @@ class SingleProjectSpec extends BaseSpec {
             compile 'com.melnykov:floatingactionbutton:1.0.7'
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
+        temporaryFolder.newFile('src')
         project.android.sourceSets.main.java.srcDirs = [ 'src' ]
 
         when:
@@ -100,8 +108,11 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 
     def "metaFilesExists"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .withName('normal')
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         setupRepositories(project)
@@ -111,6 +122,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
             compile 'com.melnykov:floatingactionbutton:1.0.7'
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
+        temporaryFolder.newFile('src')
         project.android.sourceSets.main.java.srcDirs = [ 'src' ]
         File classpathFile = project.file('.classpath')
         classpathFile.text = """<?xml version="1.0" encoding="UTF-8"?>
@@ -226,8 +238,11 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
 
     def "normalAndmoreProject"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .withName('normal')
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         setupRepositories(project)
@@ -237,6 +252,7 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
             compile 'com.melnykov:floatingactionbutton:1.0.7'
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
+        temporaryFolder.newFolder('src')
         project.android.sourceSets.main.java.srcDirs = [ 'src' ]
         project.extensions.eclipseAar.andmore = true
 
@@ -381,6 +397,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
                 'com.github.chrisbanes.photoview-library-1.2.3',
                 'com.github.amlcurran.showcaseview-library-5.0.0',
         ]
+        addStaticJarFileTo(temporaryFolder.newFolder('jarDependencies'))
         project.extensions.eclipseAar.jarDependenciesDir = 'jarDependencies'
 
         when:
@@ -391,11 +408,14 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         then:
         jarNames.find { !(it in resolvedJars) } == null
         aarNames.find { !(it in resolvedAars) } == null
+        project.file('libs/misc.jar').exists()
     }
 
     Project setupProject(List<String> libs) {
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         setupRepositories(project)

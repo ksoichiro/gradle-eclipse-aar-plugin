@@ -3,12 +3,19 @@ package com.github.ksoichiro.eclipse.aar
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class CleanSpec extends BaseSpec {
+    @Rule
+    TemporaryFolder temporaryFolder
+
     def "cleaning all directories by default"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/clean")).build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         def libsDirs = [project.file('aarDependencies'), project.file('libs')]
         libsDirs*.mkdirs()
 
@@ -32,8 +39,10 @@ class CleanSpec extends BaseSpec {
 
     def "cleaning libs directory is enabled"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/clean")).build()
-        deleteOutputs(project)
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         def libsDirs = [project.file('aarDependencies'), project.file('libs')]
         libsDirs*.mkdirs()
 

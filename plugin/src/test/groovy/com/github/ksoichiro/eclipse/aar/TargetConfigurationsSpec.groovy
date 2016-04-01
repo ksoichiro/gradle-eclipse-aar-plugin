@@ -4,11 +4,19 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class TargetConfigurationsSpec extends BaseSpec {
+    @Rule
+    TemporaryFolder temporaryFolder
+
     def "default configurations"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
 
@@ -24,7 +32,10 @@ class TargetConfigurationsSpec extends BaseSpec {
 
     def "changed configurations"() {
         setup:
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         project.eclipseAar.targetConfigurations << 'releaseCompile'

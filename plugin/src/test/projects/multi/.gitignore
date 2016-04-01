@@ -1,8 +1,0 @@
-app/aarDependencies/
-library/aarDependencies/
-.gradle/
-libs/
-userHome/
-.classpath
-.project
-project.properties

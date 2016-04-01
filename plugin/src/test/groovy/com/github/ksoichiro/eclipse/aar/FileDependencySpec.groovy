@@ -4,8 +4,12 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class FileDependencySpec extends BaseSpec {
+    @Rule
+    TemporaryFolder temporaryFolder
 
     def "File dependency in libs directory"() {
         setup:
@@ -35,21 +39,12 @@ class FileDependencySpec extends BaseSpec {
         then:
         jarNames.find { !(it in resolvedJars) } == null
         aarNames.find { !(it in resolvedAars) } == null
-    }
-
-    void deleteOutputs(Project project) {
-        ['.gradle', 'userHome', 'aarDependencies', '.classpath', '.project', 'project.properties',
-         'com.android.support-appcompat-v7-21.0.2.jar', 'com.android.support-support-annotations-21.0.2.jar',
-         'com.android.support-support-v4-21.0.2.jar'].each {
-            if (project.file(it).exists()) {
-                project.delete(it)
-            }
-        }
+        project.file('libs/misc.jar').exists()
     }
 
     Project setupProject(List<String> libs) {
-        Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/file")).build()
-        deleteOutputs(project)
+        addStaticJarFileTo(temporaryFolder.newFolder('libs'))
+        Project project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         project.plugins.apply AppPlugin
         project.plugins.apply PLUGIN_ID
         setupRepositories(project)

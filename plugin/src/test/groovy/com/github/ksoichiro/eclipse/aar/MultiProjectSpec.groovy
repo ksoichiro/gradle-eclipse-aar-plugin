@@ -5,32 +5,16 @@ import com.android.build.gradle.LibraryPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class MultiProjectSpec extends BaseSpec {
+    @Rule
+    TemporaryFolder temporaryFolder
+
     def "multiple projects"() {
         setup:
-        def builder = ProjectBuilder.builder()
-        Project project = builder.withProjectDir(new File("src/test/projects/multi")).build()
-        Project projectLibrary = builder
-                .withProjectDir(new File("src/test/projects/multi/library"))
-                .withParent(project)
-                .withName(':library')
-                .build()
-        Project projectApp = builder
-                .withProjectDir(new File("src/test/projects/multi/app"))
-                .withParent(project)
-                .withName(':app')
-                .build()
-
-        project.subprojects.each { Project p ->
-            deleteOutputs(p)
-            setupRepositories(p)
-        }
-
-        projectLibrary.plugins.apply LibraryPlugin
-        projectApp.plugins.apply AppPlugin
-
-        project.plugins.apply PLUGIN_ID
+        def (project, projectLibrary, projectApp) = setupMultiProject()
 
         projectLibrary.dependencies {
             compile 'com.android.support:recyclerview-v7:21.0.0'
@@ -108,28 +92,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 
     def "multiple projects that has meta data files"() {
         setup:
-        def builder = ProjectBuilder.builder()
-        Project project = builder.withProjectDir(new File("src/test/projects/multi")).build()
-        Project projectLibrary = builder
-                .withProjectDir(new File("src/test/projects/multi/library"))
-                .withParent(project)
-                .withName(':library')
-                .build()
-        Project projectApp = builder
-                .withProjectDir(new File("src/test/projects/multi/app"))
-                .withParent(project)
-                .withName(':app')
-                .build()
-
-        project.subprojects.each { Project p ->
-            deleteOutputs(p)
-            setupRepositories(p)
-        }
-
-        projectLibrary.plugins.apply LibraryPlugin
-        projectApp.plugins.apply AppPlugin
-
-        project.plugins.apply PLUGIN_ID
+        def (project, projectLibrary, projectApp) = setupMultiProject()
 
         projectLibrary.dependencies {
             compile 'com.android.support:recyclerview-v7:21.0.0'
@@ -219,28 +182,7 @@ android.library.reference.5=../library
 
     def "duplicate dependencies with different version"() {
         setup:
-        def builder = ProjectBuilder.builder()
-        Project project = builder.withProjectDir(new File("src/test/projects/multi")).build()
-        Project projectLibrary = builder
-                .withProjectDir(new File("src/test/projects/multi/library"))
-                .withParent(project)
-                .withName(':library')
-                .build()
-        Project projectApp = builder
-                .withProjectDir(new File("src/test/projects/multi/app"))
-                .withParent(project)
-                .withName(':app')
-                .build()
-
-        project.subprojects.each { Project p ->
-            deleteOutputs(p)
-            setupRepositories(p)
-        }
-
-        projectLibrary.plugins.apply LibraryPlugin
-        projectApp.plugins.apply AppPlugin
-
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        def (project, projectLibrary, projectApp) = setupMultiProject()
 
         projectLibrary.dependencies {
             compile 'com.android.support:recyclerview-v7:21.0.0'
@@ -278,5 +220,36 @@ android.library.reference.5=../library
         projectAppFile.exists()
         projectPropertiesLibraryFile.exists()
         projectPropertiesAppFile.exists()
+    }
+
+    def setupMultiProject() {
+        def builder = ProjectBuilder.builder()
+        Project project = builder.withProjectDir(temporaryFolder.root).build()
+        Project projectLibrary = builder
+                .withProjectDir(temporaryFolder.newFolder('library'))
+                .withParent(project)
+                .withName(':library')
+                .build()
+        Project projectApp = builder
+                .withProjectDir(temporaryFolder.newFolder('app'))
+                .withParent(project)
+                .withName(':app')
+                .build()
+
+        project.subprojects.each { Project p ->
+            setupRepositories(p)
+            ['libs', 'src/main/java'].collect { p.file(it) }*.mkdirs()
+        }
+
+        projectLibrary.file('src/main/AndroidManifest.xml').text = """<manifest>
+</manifest>
+"""
+
+        projectLibrary.plugins.apply LibraryPlugin
+        projectApp.plugins.apply AppPlugin
+
+        project.plugins.apply PLUGIN_ID
+
+        [project, projectLibrary, projectApp]
     }
 }
