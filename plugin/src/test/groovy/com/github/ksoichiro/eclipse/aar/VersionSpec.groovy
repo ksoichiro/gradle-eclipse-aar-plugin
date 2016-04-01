@@ -11,7 +11,7 @@ class VersionSpec extends BaseSpec {
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/version")).build()
         deleteOutputs(project)
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies {
             compile 'com.bingzer.android.driven:driven-gdrive:1.0.0'

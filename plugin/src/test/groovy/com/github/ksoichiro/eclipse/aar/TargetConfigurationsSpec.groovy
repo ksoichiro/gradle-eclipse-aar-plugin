@@ -10,7 +10,7 @@ class TargetConfigurationsSpec extends BaseSpec {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
 
         when:
         GenerateTask task = project.tasks['generateEclipseDependencies'] as GenerateTask
@@ -26,7 +26,7 @@ class TargetConfigurationsSpec extends BaseSpec {
         setup:
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         project.eclipseAar.targetConfigurations << 'releaseCompile'
 
         when:

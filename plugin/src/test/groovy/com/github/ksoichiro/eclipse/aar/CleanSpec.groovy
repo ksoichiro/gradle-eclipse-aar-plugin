@@ -13,7 +13,7 @@ class CleanSpec extends BaseSpec {
         libsDirs*.mkdirs()
 
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
@@ -38,7 +38,7 @@ class CleanSpec extends BaseSpec {
         libsDirs*.mkdirs()
 
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'

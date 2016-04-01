@@ -5,8 +5,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.testfixtures.ProjectBuilder
 
-import java.util.regex.Matcher
-
 class SingleProjectSpec extends BaseSpec {
 
     def "apply"() {
@@ -14,7 +12,7 @@ class SingleProjectSpec extends BaseSpec {
         Project project = ProjectBuilder.builder().build()
 
         when:
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
 
         then:
         project.tasks.cleanEclipseDependencies instanceof CleanTask
@@ -27,7 +25,7 @@ class SingleProjectSpec extends BaseSpec {
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
         deleteOutputs(project)
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
@@ -105,7 +103,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
         deleteOutputs(project)
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
@@ -231,7 +229,7 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).withName('normal').build()
         deleteOutputs(project)
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies {
             compile 'com.android.support:appcompat-v7:21.0.2'
@@ -399,7 +397,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         Project project = ProjectBuilder.builder().withProjectDir(new File("src/test/projects/normal")).build()
         deleteOutputs(project)
         project.plugins.apply AppPlugin
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
         setupRepositories(project)
         project.dependencies { DependencyHandler dh ->
             libs.each {

@@ -30,7 +30,7 @@ class MultiProjectSpec extends BaseSpec {
         projectLibrary.plugins.apply LibraryPlugin
         projectApp.plugins.apply AppPlugin
 
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
 
         projectLibrary.dependencies {
             compile 'com.android.support:recyclerview-v7:21.0.0'
@@ -129,7 +129,7 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
         projectLibrary.plugins.apply LibraryPlugin
         projectApp.plugins.apply AppPlugin
 
-        project.plugins.apply BaseSpec.PLUGIN_ID
+        project.plugins.apply PLUGIN_ID
 
         projectLibrary.dependencies {
             compile 'com.android.support:recyclerview-v7:21.0.0'
