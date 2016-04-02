@@ -1,7 +1,7 @@
 # gradle-eclipse-aar-plugin
 
 [![Build Status](http://img.shields.io/travis/ksoichiro/gradle-eclipse-aar-plugin.svg?style=flat&branch=master)](https://travis-ci.org/ksoichiro/gradle-eclipse-aar-plugin)
-[![Coverage Status](https://coveralls.io/repos/ksoichiro/gradle-eclipse-aar-plugin/badge.svg?branch=master)](https://coveralls.io/r/ksoichiro/gradle-eclipse-aar-plugin?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/ksoichiro/gradle-eclipse-aar-plugin/badge.svg?branch=master)](https://coveralls.io/github/ksoichiro/gradle-eclipse-aar-plugin?branch=master)
 [![Maven Central](http://img.shields.io/maven-central/v/com.github.ksoichiro/gradle-eclipse-aar-plugin.svg?style=flat)](https://github.com/ksoichiro/gradle-eclipse-aar-plugin/releases/latest)
 
 Gradle plugin to use Android AAR libraries on Eclipse.  
