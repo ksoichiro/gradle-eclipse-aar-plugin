@@ -50,6 +50,8 @@ class SingleProjectSpec extends BaseSpec {
         File projectPropertiesFile = project.file('project.properties')
 
         then:
+        project.file('bin').exists()
+        project.file('gen').exists()
         classpathFile.exists()
         classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
@@ -123,6 +125,8 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
             compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
         }
         temporaryFolder.newFile('src')
+        project.file('bin').mkdir()
+        project.file('gen').mkdir()
         project.android.sourceSets.main.java.srcDirs = [ 'src' ]
         File classpathFile = project.file('.classpath')
         classpathFile.text = """<?xml version="1.0" encoding="UTF-8"?>
@@ -179,6 +183,8 @@ android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.
         project.tasks.generateEclipseDependencies.execute()
 
         then:
+        project.file('bin').exists()
+        project.file('gen').exists()
         classpathFile.exists()
         classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
@@ -263,6 +269,8 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
         File projectPropertiesFile = project.file('project.properties')
 
         then:
+        project.file('bin').exists()
+        project.file('gen').exists()
         classpathFile.exists()
         classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
 <classpath>

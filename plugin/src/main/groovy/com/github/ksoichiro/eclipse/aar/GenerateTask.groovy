@@ -108,10 +108,12 @@ class GenerateTask extends BaseTask {
             fileDependencies[p].findAll {
                 it.artifactType == AndroidArtifactType.AAR
             }?.each { AndroidDependency d ->
+                generateRequiredDirectories(p, d)
                 generateProjectPropertiesFile(p, d)
                 generateEclipseClasspathFile(p, d)
                 generateEclipseProjectFile(p, d)
             }
+            generateRequiredDirectories(p)
             generateEclipseClasspathFileForParent(p)
             generateEclipseProjectFileForParent(p)
             generateProjectPropertiesFileForParent(p)
@@ -245,6 +247,12 @@ class GenerateTask extends BaseTask {
         return cv2.compareTo(cv1) < 0
     }
 
+    void generateRequiredDirectories(AndroidProject p, AndroidDependency dependency) {
+        File dependencyProjectRoot = p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}")
+        new File(dependencyProjectRoot, 'bin').mkdir()
+        new File(dependencyProjectRoot, 'gen').mkdir()
+    }
+
     void generateProjectPropertiesFile(AndroidProject p, AndroidDependency dependency) {
         new ProjectPropertiesFileGenerator(
                 androidTarget: extension.androidTarget)
@@ -264,6 +272,11 @@ class GenerateTask extends BaseTask {
                 projectName: "${extension.projectNamePrefix}${projectName}-${name}",
                 andmore: extension.andmore)
                 .generate(p.project.file("${extension.aarDependenciesDir}/${name}/.project"))
+    }
+
+    void generateRequiredDirectories(AndroidProject p) {
+        p.project.file('bin').mkdir()
+        p.project.file('gen').mkdir()
     }
 
     void generateEclipseClasspathFileForParent(AndroidProject p) {
