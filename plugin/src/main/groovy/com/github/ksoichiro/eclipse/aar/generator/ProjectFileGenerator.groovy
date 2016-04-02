@@ -10,6 +10,8 @@ class ProjectFileGenerator extends MetaDataFileGenerator {
 
     @Override
     String generateContent(File file) {
+        // Note about natures: AndroidNature should be first to be recognized
+        // as an Android project in Eclipse.
         """\
         |<?xml version="1.0" encoding="UTF-8"?>
         |<projectDescription>
@@ -40,8 +42,8 @@ class ProjectFileGenerator extends MetaDataFileGenerator {
         |\t\t</buildCommand>
         |\t</buildSpec>
         |\t<natures>
-        |\t\t<nature>org.eclipse.jdt.core.javanature</nature>
         |\t\t<nature>${toolPackage}.AndroidNature</nature>
+        |\t\t<nature>org.eclipse.jdt.core.javanature</nature>
         |\t</natures>
         |</projectDescription>
         |""".stripMargin()

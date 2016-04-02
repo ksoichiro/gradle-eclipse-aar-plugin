@@ -91,8 +91,8 @@ class SingleProjectSpec extends BaseSpec {
 \t\t</buildCommand>
 \t</buildSpec>
 \t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t</natures>
 </projectDescription>
 """
@@ -163,8 +163,8 @@ android.library.reference.5=aarDependencies/com.android.support-recyclerview-v7-
 \t\t</buildCommand>
 \t</buildSpec>
 \t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t</natures>
 </projectDescription>
 """
@@ -220,8 +220,8 @@ android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.
 \t\t</buildCommand>
 \t</buildSpec>
 \t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t\t<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t</natures>
 </projectDescription>
 """
@@ -304,8 +304,8 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
 \t\t</buildCommand>
 \t</buildSpec>
 \t<natures>
-\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t\t<nature>org.eclipse.andmore.AndroidNature</nature>
+\t\t<nature>org.eclipse.jdt.core.javanature</nature>
 \t</natures>
 </projectDescription>
 """
