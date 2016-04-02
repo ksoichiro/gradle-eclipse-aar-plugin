@@ -206,13 +206,14 @@ class GenerateTask extends BaseTask {
     }
 
     void copyJarIfNewer(AndroidProject p, AndroidDependency dependency) {
-        def dependencyProjectName = dependency.getQualifiedName()
+        String dependencyProjectRootPath = dependencyProjectRootPath(dependency)
+        String dependencyProjectName = dependency.getQualifiedName()
         boolean isAarDependency = dependency.artifactType == AndroidArtifactType.AAR
         def copyClosure = isAarDependency ? { destDir ->
             p.project.copy { CopySpec it ->
                 it.from p.project.zipTree(dependency.file)
                 it.exclude 'classes.jar'
-                it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+                it.into dependencyProjectRootPath
             }
             p.project.copy { CopySpec it ->
                 it.from p.project.zipTree(dependency.file)
@@ -235,9 +236,9 @@ class GenerateTask extends BaseTask {
             p.project.copy { CopySpec it ->
                 it.from p.project.zipTree(dependency.file)
                 it.exclude 'classes.jar'
-                it.into "${extension.aarDependenciesDir}/${dependencyProjectName}"
+                it.into dependencyProjectRootPath
             }
-            copyClosure("${extension.aarDependenciesDir}/${dependencyProjectName}/libs")
+            copyClosure("${dependencyProjectRootPath}/libs")
         }
     }
 
@@ -248,21 +249,19 @@ class GenerateTask extends BaseTask {
     }
 
     void generateRequiredDirectories(AndroidProject p, AndroidDependency dependency) {
-        File dependencyProjectRoot = p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}")
-        new File(dependencyProjectRoot, 'bin').mkdir()
-        new File(dependencyProjectRoot, 'gen').mkdir()
+        new OutputDirGenerator().generate(dependencyProjectRoot(p, dependency))
     }
 
     void generateProjectPropertiesFile(AndroidProject p, AndroidDependency dependency) {
         new ProjectPropertiesFileGenerator(
                 androidTarget: extension.androidTarget)
-                .generate(p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/project.properties"))
+                .generate(new File(dependencyProjectRoot(p, dependency), 'project.properties'))
     }
 
     void generateEclipseClasspathFile(AndroidProject p, AndroidDependency dependency) {
         new ClasspathFileGenerator(
                 andmore: extension.andmore)
-                .generate(p.project.file("${extension.aarDependenciesDir}/${dependency.getQualifiedName()}/.classpath"))
+                .generate(new File(dependencyProjectRoot(p, dependency), '.classpath'))
     }
 
     void generateEclipseProjectFile(AndroidProject p, AndroidDependency dependency) {
@@ -274,9 +273,8 @@ class GenerateTask extends BaseTask {
                 .generate(p.project.file("${extension.aarDependenciesDir}/${name}/.project"))
     }
 
-    void generateRequiredDirectories(AndroidProject p) {
-        p.project.file('bin').mkdir()
-        p.project.file('gen').mkdir()
+    static void generateRequiredDirectories(AndroidProject p) {
+        new OutputDirGenerator().generate(p.project.projectDir)
     }
 
     void generateEclipseClasspathFileForParent(AndroidProject p) {
@@ -302,5 +300,13 @@ class GenerateTask extends BaseTask {
                 fileDependencies: fileDependencies[p],
                 projectDependencies: projectDependencies[p])
                 .generate(p.project.file('project.properties'))
+    }
+
+    File dependencyProjectRoot(AndroidProject p, AndroidDependency dependency) {
+        p.project.file(dependencyProjectRootPath(dependency))
+    }
+
+    String dependencyProjectRootPath(AndroidDependency dependency) {
+        "${extension.aarDependenciesDir}/${dependency.getQualifiedName()}"
     }
 }
