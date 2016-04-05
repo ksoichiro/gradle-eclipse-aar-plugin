@@ -242,6 +242,92 @@ android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-
 """
     }
 
+    def "src is defined in classpath file"() {
+        setup:
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .withName('normal')
+                .build()
+        project.plugins.apply AppPlugin
+        project.plugins.apply PLUGIN_ID
+        setupRepositories(project)
+        project.dependencies {
+            compile 'com.android.support:appcompat-v7:21.0.2'
+            compile 'com.nineoldandroids:library:2.4.0'
+            compile 'com.melnykov:floatingactionbutton:1.0.7'
+            compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
+        }
+        temporaryFolder.newFile('src')
+        project.android.sourceSets.main.java.srcDirs = [ 'src' ]
+        File classpathFile = project.file('.classpath')
+        classpathFile.text = """<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="gen"/>
+\t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+\t<classpathentry kind="output" path="bin/classes"/>
+</classpath>
+"""
+
+        when:
+        project.tasks.generateEclipseDependencies.execute()
+
+        then:
+        classpathFile.exists()
+        classpathFile.text == """<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+\t<classpathentry kind="src" path="src"/>
+\t<classpathentry kind="src" path="gen"/>
+\t<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+\t<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+\t<classpathentry kind="output" path="bin/classes"/>
+</classpath>
+"""
+    }
+
+    def "project.properties does not contain new line at EOF"() {
+        setup:
+        Project project = ProjectBuilder
+                .builder()
+                .withProjectDir(temporaryFolder.root)
+                .withName('normal')
+                .build()
+        project.plugins.apply AppPlugin
+        project.plugins.apply PLUGIN_ID
+        setupRepositories(project)
+        project.dependencies {
+            compile 'com.android.support:appcompat-v7:21.0.2'
+            compile 'com.nineoldandroids:library:2.4.0'
+            compile 'com.melnykov:floatingactionbutton:1.0.7'
+            compile 'com.github.ksoichiro:android-observablescrollview:1.5.0'
+        }
+        temporaryFolder.newFile('src')
+        project.android.sourceSets.main.java.srcDirs = [ 'src' ]
+        File projectPropertiesFile = project.file('project.properties')
+        projectPropertiesFile.text = """\
+target=android-21
+android.library.reference.1=externals/my.lib-1.0.0
+android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2"""
+
+        when:
+        project.tasks.generateEclipseDependencies.execute()
+
+        then:
+        projectPropertiesFile.exists()
+        projectPropertiesFile.text == """target=android-21
+android.library.reference.1=externals/my.lib-1.0.0
+android.library.reference.2=aarDependencies/com.android.support-appcompat-v7-21.0.2
+android.library.reference.3=aarDependencies/com.melnykov-floatingactionbutton-1.0.7
+android.library.reference.4=aarDependencies/com.github.ksoichiro-android-observablescrollview-1.5.0
+android.library.reference.5=aarDependencies/com.android.support-support-v4-21.0.2
+android.library.reference.6=aarDependencies/com.android.support-recyclerview-v7-21.0.0
+"""
+    }
+
     def "normalAndmoreProject"() {
         setup:
         Project project = ProjectBuilder
