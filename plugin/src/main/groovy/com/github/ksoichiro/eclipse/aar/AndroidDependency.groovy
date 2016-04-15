@@ -6,6 +6,7 @@ class AndroidDependency {
     String group
     String name
     String version
+    String classifier
     File file
     AndroidArtifactType artifactType
 
@@ -16,7 +17,7 @@ class AndroidDependency {
         if (isRawJar()) {
             return filenameExtStripped()
         }
-        if (!group && !name && !version) {
+        if (!group && !name && !version && !classifier) {
             return filenameExtStripped()
         }
         def list = []
@@ -28,6 +29,9 @@ class AndroidDependency {
         }
         if (version && !version.isEmpty()) {
             list << version
+        }
+        if (classifier && !classifier.isEmpty()) {
+            list << classifier
         }
         list.join(SEPARATOR)
     }
@@ -41,7 +45,7 @@ class AndroidDependency {
     }
 
     boolean isSameArtifact(AndroidDependency dependency) {
-        dependency && artifactType == dependency.artifactType && group == dependency.group && name == dependency.name
+        dependency && artifactType == dependency.artifactType && group == dependency.group && name == dependency.name && classifier == dependency.classifier
     }
 
     boolean isSameArtifactVersion(AndroidDependency dependency) {

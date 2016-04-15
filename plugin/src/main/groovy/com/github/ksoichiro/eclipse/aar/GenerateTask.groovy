@@ -136,11 +136,12 @@ class GenerateTask extends BaseTask {
         // '-' is not always the separator of version, version itself often has '-'.
         // So we should find version from resolved dependencies.
         // Path: .../modules-2/files-2.1/group/artifact/version/hash/artifact-version.ext
+        // Path: .../modules-2/files-2.1/group/artifact/version/hash/artifact-version-classifier.ext
         def baseFilename = getBaseName(file.name)
         String target = file.path.tr(System.getProperty('file.separator'), '-')
         AndroidDependency dependency = null
         allConfigurationsDependencies.each { k, v ->
-            if ("${v.moduleName}-${v.moduleVersion}" == baseFilename) {
+            if (baseFilename ==~ /${v.moduleName}-${v.moduleVersion}.*/) {
                 // This may be the dependency of the file
                 // Find group from file path and check qualified name matches
                 if (target ==~ /.*-${v.moduleGroup}-${v.moduleName}-${v.moduleVersion}-.*/) {
@@ -150,6 +151,9 @@ class GenerateTask extends BaseTask {
                         group = v.moduleGroup
                         name = v.moduleName
                         version = v.moduleVersion
+                        if (baseFilename != "${v.moduleName}-${v.moduleVersion}") {
+                            classifier = baseFilename.replace("${v.moduleName}-${v.moduleVersion}-", '')
+                        }
                         it.file = file
                         artifactType = file.name.endsWith('jar') ? AndroidArtifactType.JAR : AndroidArtifactType.AAR
                     }
