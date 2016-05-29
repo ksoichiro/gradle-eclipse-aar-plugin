@@ -50,7 +50,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ksoichiro.eclipse.aar' version '0.2.0'
+    id 'com.github.ksoichiro.eclipse.aar' version '0.3.0'
 }
 
 apply plugin: 'com.android.application'
@@ -69,7 +69,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
-        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.2.0'
+        classpath 'com.github.ksoichiro:gradle-eclipse-aar-plugin:0.3.0'
     }
 }
 
