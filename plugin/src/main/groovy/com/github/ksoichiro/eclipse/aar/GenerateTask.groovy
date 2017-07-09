@@ -215,6 +215,7 @@ class GenerateTask extends BaseTask {
         boolean isAarDependency = dependency.artifactType == AndroidArtifactType.AAR
         def copyClosure = isAarDependency ? { destDir ->
             p.project.copy { CopySpec it ->
+                it.setFileMode(644)
                 it.from p.project.zipTree(dependency.file)
                 it.exclude 'classes.jar'
                 it.into dependencyProjectRootPath
@@ -238,6 +239,7 @@ class GenerateTask extends BaseTask {
         copyClosure('libs')
         if (isAarDependency) {
             p.project.copy { CopySpec it ->
+                it.setFileMode(644)
                 it.from p.project.zipTree(dependency.file)
                 it.exclude 'classes.jar'
                 it.into dependencyProjectRootPath
